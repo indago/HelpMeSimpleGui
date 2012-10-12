@@ -1,0 +1,12 @@
+package com.android.helpme.demo.messagesystem;
+/**
+ * 
+ * @author Andreas Wieland
+ *
+ */
+public enum MESSAGE_TYPE {
+	NULL,
+	ERROR,
+	STRING,
+	OBJECT, LOGIN, LOGOUT, CREATE_QUEUE, LIST_QUEUE, LIST_STRING, LIST_SQS_MESSAGE, SEND, LIST_TOPICS, LIST_SUBSCRIPTION, CREATE_TOPIC, SUBSCRIBE, CONNECTED, LOCATION,
+}

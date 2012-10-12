@@ -1,8 +1,12 @@
 <resources>
 
-    <string name="app_name">helpme.demo</string>
+    <string name="app_name">IndagoDemo</string>
     <string name="hello_world">Hello world!</string>
     <string name="menu_settings">Settings</string>
     <string name="title_activity_main">MainActivity</string>
+    <string name="writesth">please write something</string>
+    <string name="waitingtext">waiting for new information</string>
+    <string name="helpButton">help Me</string>
+    <string name="title_activity_foundhelper">found Helper</string>
 
 </resources>

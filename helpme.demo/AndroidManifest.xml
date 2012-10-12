@@ -3,6 +3,9 @@
     android:versionCode="1"
     android:versionName="1.0" >
 
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
     <uses-sdk
         android:minSdkVersion="16"
         android:targetSdkVersion="15" />
@@ -19,6 +22,11 @@
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
+        </activity>
+        <activity
+            android:name=".FoundHelperActivity"
+            android:label="@string/title_activity_foundhelper"
+            android:screenOrientation="portrait" >
         </activity>
     </application>
 
