@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.android.helpme.demo.position;
+package com.android.helpme.demo.utils.position;
 
 import java.util.Date;
 
 import android.location.Location;
 
-public class SimpleSelectionStrategy {
+public abstract class SimpleSelectionStrategy {
 
 	public static boolean isPositionRelevant(Location location) {
 		Date now = new Date();

@@ -9,16 +9,18 @@ import java.util.HashMap;
 import com.android.helpme.demo.DrawManager;
 import com.android.helpme.demo.DrawManager.DRAWMANAGER_TYPE;
 import com.android.helpme.demo.exceptions.WrongObjectType;
+import com.android.helpme.demo.manager.interfaces.MessageOrchestratorInterface;
+import com.android.helpme.demo.manager.interfaces.RabbitMQManagerInterface;
 import com.android.helpme.demo.messagesystem.AbstractMessageSystem;
+import com.android.helpme.demo.messagesystem.AbstractMessageSystemInterface;
 import com.android.helpme.demo.messagesystem.InAppMessage;
 import com.android.helpme.demo.messagesystem.MESSAGE_TYPE;
-import com.android.helpme.demo.messagesystem.MessageHandler;
 
 import android.location.Location;
 import android.util.Log;
 
 
-public class MessageOrchestrator extends MessageHandler implements PropertyChangeListener {
+public class MessageOrchestrator extends MessageHandler implements MessageOrchestratorInterface {
 	private static final String LOGTAG = MessageOrchestrator.class.getSimpleName();
 	private static MessageOrchestrator messageOrchestrator;
 	private InAppMessage message;
@@ -38,7 +40,7 @@ public class MessageOrchestrator extends MessageHandler implements PropertyChang
 		drawManagerMap = new HashMap<DrawManager.DRAWMANAGER_TYPE, DrawManager>();
 	}
 	
-	public static void listenToMessageSystem(AbstractMessageSystem messageSystem) {
+	public void listenToMessageSystem(AbstractMessageSystem messageSystem) {
 		if (!(getInstance().arrayList.contains(messageSystem.getLogTag()))) {
 			messageSystem.addPropertyChangeListener(getInstance());
 			getInstance().arrayList.add(messageSystem.getLogTag());
@@ -67,6 +69,9 @@ public class MessageOrchestrator extends MessageHandler implements PropertyChang
 		this.message = message;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.android.helpme.demo.manager.MessageOrchestratorInterface#propertyChange(java.beans.PropertyChangeEvent)
+	 */
 	@Override
 	public void propertyChange(PropertyChangeEvent event) {
 		if (!(event.getNewValue() instanceof InAppMessage)) {
@@ -74,15 +79,8 @@ public class MessageOrchestrator extends MessageHandler implements PropertyChang
 		}
 		InAppMessage message = (InAppMessage) event.getNewValue();
 		if (message.getType() == MESSAGE_TYPE.ERROR) {
-			Log.e(((AbstractMessageSystem)message.getSource()).getLogTag(), ((Exception)message.getObject()).toString());
-//		}
-//		else if (message.getSource() instanceof AmazonClientManager) {
-//			handleAmazonClientMenagerMessages(message);
-//		}else if (message.getSource() instanceof SQSManager) {
-//			handleSQSMessages(message);
-//		}else if (message.getSource() instanceof SNSManager) {
-//			handleSNSMessages(message);
-		}else if (message.getSource() instanceof RabbitMQManager) {
+			Log.e(((AbstractMessageSystemInterface)message.getSource()).getLogTag(), ((Exception)message.getObject()).toString());
+		}else if (message.getSource() instanceof RabbitMQManagerInterface) {
 			handleRabbitMQMessages(message);
 		}else if (message.getSource() instanceof PositionManager) {
 			handleLocationMessage(message);
@@ -90,20 +88,29 @@ public class MessageOrchestrator extends MessageHandler implements PropertyChang
 	}
 
 	@Override
-	public AbstractMessageSystem getManager() {
+	public AbstractMessageSystemInterface getManager() {
 		return messageOrchestrator;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.android.helpme.demo.manager.MessageOrchestratorInterface#getDrawManagers()
+	 */
 	@Override
 	public HashMap<DrawManager.DRAWMANAGER_TYPE, DrawManager> getDrawManagers() {
 		return drawManagerMap;
 	}
 	
+	/* (non-Javadoc)
+	 * @see com.android.helpme.demo.manager.MessageOrchestratorInterface#getDrawManager(com.android.helpme.demo.DrawManager.DRAWMANAGER_TYPE)
+	 */
 	@Override
 	public DrawManager getDrawManager(DRAWMANAGER_TYPE type) {
 		return drawManagerMap.get(type);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.android.helpme.demo.manager.MessageOrchestratorInterface#setDrawManager(com.android.helpme.demo.DrawManager.DRAWMANAGER_TYPE, com.android.helpme.demo.DrawManager)
+	 */
 	@Override
 	public void setDrawManager(DrawManager.DRAWMANAGER_TYPE type,DrawManager drawManager) {
 		this.drawManagerMap.put(type, drawManager);	

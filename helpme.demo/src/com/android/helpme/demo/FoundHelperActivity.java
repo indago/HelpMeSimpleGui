@@ -8,7 +8,8 @@ import org.json.simple.JSONObject;
 
 import com.android.helpme.demo.manager.MessageOrchestrator;
 import com.android.helpme.demo.manager.PositionManager;
-import com.android.helpme.demo.utils.User;
+import com.android.helpme.demo.manager.UserManager;
+import com.android.helpme.demo.utils.UserInterface;
 
 
 import android.app.Activity;
@@ -39,7 +40,7 @@ public class FoundHelperActivity extends Activity implements DrawManager {
 			data = new ArrayList<String>();
 			
 			adapter = new ArrayAdapter<String>(this, R.layout.simplerow,data);
-			for (User user : PositionManager.getInstance().getPositions()) {
+			for (UserInterface user : UserManager.getInstance().getUsers()) {
 				adapter.add(user.toString());
 			}
 			
@@ -52,7 +53,7 @@ public class FoundHelperActivity extends Activity implements DrawManager {
 				public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 					
 					String[] name = adapter.getItem(position).split(":");
-					User user = PositionManager.getInstance().getPosition(name[1]);
+					UserInterface user = UserManager.getInstance().getUser(name[1]);
 					if (user != null) {
 						showPosition(user, view);
 					}
@@ -73,7 +74,7 @@ public class FoundHelperActivity extends Activity implements DrawManager {
 		adapter.notifyDataSetChanged();
 	}
 	
-	public void showPosition(User user, View view) {
+	public void showPosition(UserInterface user, View view) {
 		AlertDialog.Builder dlgAlert = new AlertDialog.Builder(view.getContext());
 		dlgAlert.setTitle(user.toString());
 		dlgAlert.setMessage(user.toString() + "\n" +user.getPosition().toString());

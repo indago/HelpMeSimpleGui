@@ -1,4 +1,4 @@
-package com.android.helpme.demo.messagesystem;
+package com.android.helpme.demo.manager;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -19,39 +19,36 @@ import com.android.helpme.demo.DrawManager.DRAWMANAGER_TYPE;
 import com.android.helpme.demo.MainActivity;
 import com.android.helpme.demo.exceptions.UnkownMessageType;
 import com.android.helpme.demo.exceptions.WrongObjectType;
-import com.android.helpme.demo.manager.MessageOrchestrator;
-import com.android.helpme.demo.manager.PositionManager;
-import com.android.helpme.demo.manager.RabbitMQManager;
-import com.android.helpme.demo.position.Position;
+import com.android.helpme.demo.manager.interfaces.MessageHandlerInterface;
+import com.android.helpme.demo.manager.interfaces.MessageOrchestratorInterface;
+import com.android.helpme.demo.manager.interfaces.RabbitMQManagerInterface;
+import com.android.helpme.demo.messagesystem.AbstractMessageSystem;
+import com.android.helpme.demo.messagesystem.InAppMessage;
 import com.android.helpme.demo.utils.ThreadPool;
 import com.android.helpme.demo.utils.User;
+import com.android.helpme.demo.utils.position.Position;
+import com.android.helpme.demo.utils.position.PositionInterface;
 
 /**
  * 
  * @author Andreas Wieland
  * 
  */
-public abstract class MessageHandler extends AbstractMessageSystem {
-
-	abstract public DrawManager getDrawManager(DrawManager.DRAWMANAGER_TYPE type);
-
-	abstract public HashMap<DrawManager.DRAWMANAGER_TYPE, DrawManager> getDrawManagers();
-
-	abstract public void setDrawManager(DrawManager.DRAWMANAGER_TYPE type, DrawManager drawManager);
+public abstract class MessageHandler extends AbstractMessageSystem implements MessageHandlerInterface{
 
 	abstract protected boolean reloadDatabase();
 
 	protected void handleLocationMessage(InAppMessage message) {
 		switch (message.getType()) {
 		case LOCATION:
-			if (!(message.getObject() instanceof Position)) {
+			if (!(message.getObject() instanceof PositionInterface)) {
 				fireError(new WrongObjectType(message.getObject(), Position.class));
 				return;
 			}
-			Position position = (Position) message.getObject();
+			PositionInterface position = (PositionInterface) message.getObject();
 			JSONObject object = new JSONObject();
 			object = MainActivity.user.getJsonObject();
-			object.put(Position.POSITION, position.getJSON());
+			object.put(PositionInterface.POSITION, position.getJSON());
 
 			ThreadPool.runTask(PositionManager.getInstance().stopLocationTracking());
 			ThreadPool.runTask(RabbitMQManager.getInstance().sendString(object.toString()));
@@ -66,7 +63,7 @@ public abstract class MessageHandler extends AbstractMessageSystem {
 	protected void handleRabbitMQMessages(InAppMessage message) {
 		switch (message.getType()) {
 		case CONNECTED:
-			if (!(message.getObject() instanceof RabbitMQManager)) {
+			if (!(message.getObject() instanceof RabbitMQManagerInterface)) {
 				fireError(new WrongObjectType(message.getObject(), RabbitMQManager.class));
 				return;
 			}
@@ -88,14 +85,13 @@ public abstract class MessageHandler extends AbstractMessageSystem {
 				if (!user.getHelfer()) {
 					ThreadPool.runTask(PositionManager.getInstance().startLocationTracking());
 				}
-					PositionManager.getInstance().addPosition(user);
-					if (getDrawManager(DRAWMANAGER_TYPE.LIST) == null) {
-						getDrawManager(DRAWMANAGER_TYPE.MAIN).drawThis(object);
-					}else {
-						getDrawManager(DRAWMANAGER_TYPE.LIST).drawThis(object);
-					}
-					
-//				}
+				UserManager.getInstance().addUser(user);
+				if (getDrawManager(DRAWMANAGER_TYPE.LIST) == null) {
+					getDrawManager(DRAWMANAGER_TYPE.MAIN).drawThis(object);
+				} else {
+					getDrawManager(DRAWMANAGER_TYPE.LIST).drawThis(object);
+				}
+
 
 			} catch (ParseException e) {
 				fireError(e);
@@ -109,6 +105,14 @@ public abstract class MessageHandler extends AbstractMessageSystem {
 		}
 	}
 
+	protected void handleUserMessages(InAppMessage message) {
+		switch (message.getType()) {
+
+		default:
+			fireError(new UnkownMessageType());
+			break;
+		}
+	}
 
 	/**
 	 * handles messages from Stomp Connection

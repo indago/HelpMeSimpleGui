@@ -5,12 +5,15 @@ package com.android.helpme.demo.manager;
 
 import java.util.ArrayList;
 
+import com.android.helpme.demo.manager.interfaces.PositionManagerInterface;
 import com.android.helpme.demo.messagesystem.AbstractMessageSystem;
+import com.android.helpme.demo.messagesystem.AbstractMessageSystemInterface;
 import com.android.helpme.demo.messagesystem.InAppMessage;
 import com.android.helpme.demo.messagesystem.MESSAGE_TYPE;
-import com.android.helpme.demo.position.Position;
-import com.android.helpme.demo.position.SimpleSelectionStrategy;
 import com.android.helpme.demo.utils.User;
+import com.android.helpme.demo.utils.position.Position;
+import com.android.helpme.demo.utils.position.PositionInterface;
+import com.android.helpme.demo.utils.position.SimpleSelectionStrategy;
 
 import android.app.Activity;
 import android.content.Context;
@@ -25,14 +28,13 @@ import android.util.Log;
  * @author Andreas Wieland
  * 
  */
-public class PositionManager extends AbstractMessageSystem implements LocationListener {
+public class PositionManager extends AbstractMessageSystem implements PositionManagerInterface {
 	private static final String LOGTAG = PositionManager.class.getSimpleName();
 	private InAppMessage message;
 	private static PositionManager manager;
 	private LocationManager locationManager;
 	private Location lastLocation;
 	private boolean started;
-	private ArrayList<User> positions;
 
 	/**
 	 * 
@@ -41,10 +43,9 @@ public class PositionManager extends AbstractMessageSystem implements LocationLi
 		locationManager = (LocationManager) activity.getSystemService(Context.LOCATION_SERVICE);
 		lastLocation = null;
 		started = false;
-		positions = new ArrayList<User>();
 	}
 
-	public static PositionManager getInstance() {
+	public static PositionManagerInterface getInstance() {
 		return manager;
 	}
 
@@ -96,7 +97,7 @@ public class PositionManager extends AbstractMessageSystem implements LocationLi
 	 * com.indago.android.demo.messagesystem.AbstractMessageSystem#getManager()
 	 */
 	@Override
-	public AbstractMessageSystem getManager() {
+	public AbstractMessageSystemInterface getManager() {
 		return manager;
 	}
 
@@ -110,7 +111,7 @@ public class PositionManager extends AbstractMessageSystem implements LocationLi
 			return;
 		}
 		lastLocation = location;
-		Position wayPointData = new Position(location);
+		PositionInterface wayPointData = new Position(location);
 		fireMessageFromManager(wayPointData, MESSAGE_TYPE.LOCATION);
 	}
 
@@ -132,6 +133,10 @@ public class PositionManager extends AbstractMessageSystem implements LocationLi
 
 	}
 
+	/* (non-Javadoc)
+	 * @see com.android.helpme.demo.manager.PositionManagerInterface#startLocationTracking()
+	 */
+	@Override
 	public Runnable startLocationTracking() {
 		return new Runnable() {
 
@@ -159,6 +164,10 @@ public class PositionManager extends AbstractMessageSystem implements LocationLi
 
 	}
 
+	/* (non-Javadoc)
+	 * @see com.android.helpme.demo.manager.PositionManagerInterface#stopLocationTracking()
+	 */
+	@Override
 	public Runnable stopLocationTracking() {
 		return new Runnable() {
 
@@ -180,28 +189,12 @@ public class PositionManager extends AbstractMessageSystem implements LocationLi
 
 	}
 
+	/* (non-Javadoc)
+	 * @see com.android.helpme.demo.manager.PositionManagerInterface#isStarted()
+	 */
+	@Override
 	public boolean isStarted() {
 		return started;
-	}
-
-	public void addPosition(User position) {
-		synchronized (positions) {
-			positions.add(position);
-		}
-	}
-
-	public ArrayList<User> getPositions() {
-		return positions;
-	}
-
-	public User getPosition(String item) {
-		item = item.trim();
-		for (User user : positions) {
-			if (user.getName().compareToIgnoreCase(item) == 0) {
-				return user;
-			}
-		}
-		return null;
 	}
 
 }

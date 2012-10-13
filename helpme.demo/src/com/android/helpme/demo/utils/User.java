@@ -3,7 +3,9 @@ package com.android.helpme.demo.utils;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
-import com.android.helpme.demo.position.Position;
+import com.android.helpme.demo.utils.position.Position;
+import com.android.helpme.demo.utils.position.PositionInterface;
+
 
 
 /**
@@ -11,12 +13,10 @@ import com.android.helpme.demo.position.Position;
  * @author Andreas Wieland
  *
  */
-public class User {
-	public static final String ACCOUNT = "ACCOUNT";
-	public static final String HELFER = "HELFER";
+public class User implements UserInterface {
 	private String name;
 	private Boolean helfer;
-	private Position position; 
+	private PositionInterface position; 
 
 	public User(String name, Boolean helfer) {
 		this.name = name;
@@ -26,24 +26,40 @@ public class User {
 	public User(JSONObject object) {
 		this.name = (String) object.get(ACCOUNT);
 		this.helfer = (Boolean) object.get(HELFER);
-		if (object.get(Position.POSITION) != null) {
+		if (object.get(PositionInterface.POSITION) != null) {
 			this.position = new Position(object);
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see com.android.helpme.demo.utils.UserInterface#getName()
+	 */
+	@Override
 	public String getName() {
 		return name;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.android.helpme.demo.utils.UserInterface#getHelfer()
+	 */
+	@Override
 	public Boolean getHelfer() {
 		return helfer;
 	}
 	
-	public Position getPosition() {
+	/* (non-Javadoc)
+	 * @see com.android.helpme.demo.utils.UserInterface#getPosition()
+	 */
+	@Override
+	public PositionInterface getPosition() {
 		return position;
 	}
 
-	public void setPosition(Position position) {
+	/* (non-Javadoc)
+	 * @see com.android.helpme.demo.utils.UserInterface#setPosition(com.android.helpme.demo.utils.position.Position)
+	 */
+	@Override
+	public void setPosition(PositionInterface position) {
 		this.position = position;
 	}
 	
@@ -59,11 +75,15 @@ public class User {
 		return string;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.android.helpme.demo.utils.UserInterface#getJsonObject()
+	 */
+	@Override
 	public JSONObject getJsonObject() {
 		JSONObject object = new JSONObject();
 		object.put(ACCOUNT, name);
 		object.put(HELFER, helfer);
-		object.put(Position.POSITION, position);
+		object.put(PositionInterface.POSITION, position);
 		return object;
 	}
 	

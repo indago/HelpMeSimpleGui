@@ -4,7 +4,9 @@ import java.io.IOException;
 
 import android.util.Log;
 
+import com.android.helpme.demo.manager.interfaces.RabbitMQManagerInterface;
 import com.android.helpme.demo.messagesystem.AbstractMessageSystem;
+import com.android.helpme.demo.messagesystem.AbstractMessageSystemInterface;
 import com.android.helpme.demo.messagesystem.InAppMessage;
 import com.android.helpme.demo.messagesystem.MESSAGE_TYPE;
 import com.rabbitmq.client.Channel;
@@ -14,7 +16,7 @@ import com.rabbitmq.client.ConsumerCancelledException;
 import com.rabbitmq.client.QueueingConsumer;
 import com.rabbitmq.client.ShutdownSignalException;
 
-public class RabbitMQManager extends AbstractMessageSystem {
+public class RabbitMQManager extends AbstractMessageSystem implements RabbitMQManagerInterface {
 	public static final String LOGTAG = RabbitMQManager.class.getSimpleName();
 	public static String QUEUE;
 	private static final String EXCHANGE_NAME = "call";
@@ -34,6 +36,10 @@ public class RabbitMQManager extends AbstractMessageSystem {
 		return rabbitMQManager;
 	}
 	
+	/* (non-Javadoc)
+	 * @see com.android.helpme.demo.manager.RabbitMQManagerInterface#connect()
+	 */
+	@Override
 	public Runnable connect(){
 		return new Runnable() {
 			
@@ -68,6 +74,10 @@ public class RabbitMQManager extends AbstractMessageSystem {
 		factory.setHost(URL);
 	}
 	
+	/* (non-Javadoc)
+	 * @see com.android.helpme.demo.manager.RabbitMQManagerInterface#sendString(java.lang.String)
+	 */
+	@Override
 	public Runnable sendString(final String string) {
 		return new Runnable() {
 			
@@ -84,6 +94,10 @@ public class RabbitMQManager extends AbstractMessageSystem {
 		};
 	}
 	
+	/* (non-Javadoc)
+	 * @see com.android.helpme.demo.manager.RabbitMQManagerInterface#getString()
+	 */
+	@Override
 	public Runnable getString() {
 		return new Runnable() {
 			
@@ -131,7 +145,7 @@ public class RabbitMQManager extends AbstractMessageSystem {
 	}
 
 	@Override
-	public AbstractMessageSystem getManager() {
+	public AbstractMessageSystemInterface getManager() {
 		return rabbitMQManager;
 	}
 

@@ -8,18 +8,13 @@ import java.beans.PropertyChangeSupport;
  * @author Andreas Wieland
  *
  */
-public abstract class AbstractMessageSystem extends PropertyChangeSupport{
+public abstract class AbstractMessageSystem extends PropertyChangeSupport implements AbstractMessageSystemInterface{
 	protected static InAppMessage message = new InAppMessage(null, null, MESSAGE_TYPE.NULL);
 	
 	public AbstractMessageSystem() {
 		super(message);
 	}
 	
-	/**
-	 * sets the LogTag for each class its for debuging on android
-	 * @return
-	 */
-	public abstract String getLogTag();
 	/**
 	 * gets the {@link InAppMessage} from the implementing class
 	 * @return
@@ -44,8 +39,6 @@ public abstract class AbstractMessageSystem extends PropertyChangeSupport{
 		firePropertyChange("Message", oldMessage, newMessage);
 		setMessage(newMessage);
 	}
-	
-	public abstract AbstractMessageSystem getManager();
 	
 	/**
 	 * standard method which will fire a new Message from the current {@link AbstractMessageSystem} via {@link PropertyChangeEvent}

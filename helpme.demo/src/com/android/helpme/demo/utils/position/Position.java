@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.android.helpme.demo.position;
+package com.android.helpme.demo.utils.position;
 
 import java.io.Serializable;
 import java.text.DateFormat;
@@ -27,15 +27,7 @@ import android.R.dimen;
 import android.location.Location;
 import android.os.Bundle;
 
-public class Position implements Serializable {
-	public static final String POSITION = "position";
-	 public static final String PRECISION = "precision";
-	 public static final String DIRECTION = "direction";
-	 public static final String SPEED = "speed";
-	 public static final String LONGITUDE = "longitude";
-	 public static final String LATITUDE = "latitude";
-	 public static final String DATE = "date";
-
+public class Position implements Serializable, PositionInterface {
 	private double longitude;
 	private double latitude;
 	private double speed;
@@ -64,10 +56,6 @@ public class Position implements Serializable {
 		this.date = date;
 	}
 
-//	public LonLatData getPosition() {
-//		return position;
-//	}
-
 	public Position(JSONObject object) {
 		JSONObject position = (JSONObject) object.get(POSITION);
 		this.longitude = (Double)position.get(LONGITUDE);
@@ -78,31 +66,59 @@ public class Position implements Serializable {
 		this.date = (Long)position.get(DATE);
 	}
 
+	/* (non-Javadoc)
+	 * @see com.android.helpme.demo.utils.position.PositionInterface#getSpeed()
+	 */
+	@Override
 	public double getSpeed() {
 		return speed;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.android.helpme.demo.utils.position.PositionInterface#getDirection()
+	 */
+	@Override
 	public double getDirection() {
 		return direction;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.android.helpme.demo.utils.position.PositionInterface#getPrecision()
+	 */
+	@Override
 	public double getPrecision() {
 		return precision;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.android.helpme.demo.utils.position.PositionInterface#getMeasureDateTime()
+	 */
+	@Override
 	public long getMeasureDateTime() {
 		return date;
 	}
 	
+	/* (non-Javadoc)
+	 * @see com.android.helpme.demo.utils.position.PositionInterface#getLongitude()
+	 */
+	@Override
 	public double getLongitude() {
 		return longitude;
 	}
 
+	/* (non-Javadoc)
+	 * @see com.android.helpme.demo.utils.position.PositionInterface#getLatitude()
+	 */
+	@Override
 	public double getLatitude() {
 		return latitude;
 	}
 	
-	public double calculateSphereDistance(Position other) {
+	/* (non-Javadoc)
+	 * @see com.android.helpme.demo.utils.position.PositionInterface#calculateSphereDistance(com.android.helpme.demo.utils.position.PositionInterface)
+	 */
+	@Override
+	public double calculateSphereDistance(PositionInterface other) {
 
 		double earthRadius = 3958.75;
 		double dLat = Math.toRadians(this.latitude - other.getLatitude());
@@ -118,43 +134,11 @@ public class Position implements Serializable {
 
 		return  (dist * meterConversion);
 	}
-
-	// public static WayPointData create(Bundle bundle) {
-	// Ensure.bundleHasKeys(bundle, DATE, OPERATION_ID, LAT, LON, SPEED,
-	// DIRECTION, PRECISION, MEASUREMENT_METHOD);
-	//
-	// LonLat pos = new LonLatData(bundle.getFloat(LON), bundle.getFloat(LAT));
-	// PositionMeasurementMethod src =
-	// PositionMeasurementMethod.Create(bundle.getString(MEASUREMENT_METHOD));
-	// Date date = DateUtil.parse(bundle.getString(DATE));
-	// return new WayPointData(bundle.getString(OPERATION_ID), pos,
-	// bundle.getFloat(SPEED), bundle.getFloat(DIRECTION),
-	// bundle.getFloat(PRECISION), src, date);
-	//
-	// }
-
-	// public static boolean isWayPointBundle(Bundle bundle) {
-	// return BundleUtil.containsAll(bundle, OPERATION_ID, DATE, LAT, LON,
-	// SPEED, DIRECTION, PRECISION, MEASUREMENT_METHOD);
-	// }
-
-	// public Bundle getBundle() {
-	// Bundle b = new Bundle();
-	// b.putString(OPERATION_ID, this.operationId);
-	// b.putString(DATE, DateUtil.format(this.date));
-	// b.putFloat(LAT, position.getLatitude());
-	// b.putFloat(LON, position.getLongitude());
-	// b.putFloat(SPEED, speed);
-	// b.putFloat(DIRECTION, direction);
-	// b.putFloat(PRECISION, precision);
-	// b.putString(MEASUREMENT_METHOD, measurementMethod.toString());
-	// return b;
-	// }
-
-	// public String getOperationId() {
-	// return this.operationId;
-	// }
 	
+	/* (non-Javadoc)
+	 * @see com.android.helpme.demo.utils.position.PositionInterface#getJSON()
+	 */
+	@Override
 	public JSONObject getJSON(){
 		JSONObject object = new JSONObject();
 		object.put(LONGITUDE, this.longitude);
