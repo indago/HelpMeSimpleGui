@@ -1,8 +1,8 @@
-package com.android.helpme.demo;
+package com.android.helpme.demo.gui;
 
 public interface DrawManager {
 	public enum DRAWMANAGER_TYPE {
-		MAIN, LIST;
+		MAIN, LIST, LOGIN;
 	}
 	public void drawThis(Object object);
 

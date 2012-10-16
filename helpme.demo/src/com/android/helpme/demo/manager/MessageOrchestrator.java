@@ -6,9 +6,9 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 
-import com.android.helpme.demo.DrawManager;
-import com.android.helpme.demo.DrawManager.DRAWMANAGER_TYPE;
 import com.android.helpme.demo.exceptions.WrongObjectType;
+import com.android.helpme.demo.gui.DrawManager;
+import com.android.helpme.demo.gui.DrawManager.DRAWMANAGER_TYPE;
 import com.android.helpme.demo.manager.interfaces.MessageOrchestratorInterface;
 import com.android.helpme.demo.manager.interfaces.RabbitMQManagerInterface;
 import com.android.helpme.demo.messagesystem.AbstractMessageSystem;
@@ -84,6 +84,8 @@ public class MessageOrchestrator extends MessageHandler implements MessageOrches
 			handleRabbitMQMessages(message);
 		}else if (message.getSource() instanceof PositionManager) {
 			handleLocationMessage(message);
+		}else if (message.getSource() instanceof UserManager) {
+			handleUserMessages(message);
 		}
 	}
 

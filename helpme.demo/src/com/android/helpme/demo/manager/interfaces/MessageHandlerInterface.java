@@ -2,8 +2,8 @@ package com.android.helpme.demo.manager.interfaces;
 
 import java.util.HashMap;
 
-import com.android.helpme.demo.DrawManager;
-import com.android.helpme.demo.DrawManager.DRAWMANAGER_TYPE;
+import com.android.helpme.demo.gui.DrawManager;
+import com.android.helpme.demo.gui.DrawManager.DRAWMANAGER_TYPE;
 
 public interface MessageHandlerInterface {
 
