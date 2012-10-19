@@ -9,7 +9,7 @@ import com.android.helpme.demo.manager.interfaces.PositionManagerInterface;
 import com.android.helpme.demo.messagesystem.AbstractMessageSystem;
 import com.android.helpme.demo.messagesystem.AbstractMessageSystemInterface;
 import com.android.helpme.demo.messagesystem.InAppMessage;
-import com.android.helpme.demo.messagesystem.MESSAGE_TYPE;
+import com.android.helpme.demo.messagesystem.inAppMessageType;
 import com.android.helpme.demo.utils.User;
 import com.android.helpme.demo.utils.position.Position;
 import com.android.helpme.demo.utils.position.PositionInterface;
@@ -21,6 +21,7 @@ import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
@@ -35,6 +36,8 @@ public class PositionManager extends AbstractMessageSystem implements PositionMa
 	private LocationManager locationManager;
 	private Location lastLocation;
 	private boolean started;
+	private Handler handler;
+	private String generatedId;
 
 	/**
 	 * 
@@ -43,6 +46,7 @@ public class PositionManager extends AbstractMessageSystem implements PositionMa
 		locationManager = (LocationManager) activity.getSystemService(Context.LOCATION_SERVICE);
 		lastLocation = null;
 		started = false;
+		handler = new Handler();
 	}
 
 	public static PositionManagerInterface getInstance() {
@@ -110,10 +114,10 @@ public class PositionManager extends AbstractMessageSystem implements PositionMa
 //			return;
 //		}
 		lastLocation = location;
-		PositionInterface wayPointData = new Position(location);
+		Position wayPointData = new Position(location);
 		Log.i(getLogTag(), "new Location arrived");
 		
-		fireMessageFromManager(wayPointData, MESSAGE_TYPE.LOCATION);
+		fireMessageFromManager(wayPointData, inAppMessageType.LOCATION);
 	}
 
 	@Override
@@ -153,13 +157,21 @@ public class PositionManager extends AbstractMessageSystem implements PositionMa
 
 				lastLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 				if (lastLocation != null && SimpleSelectionStrategy.isPositionRelevant(lastLocation)) {
-					fireMessageFromManager(new Position(lastLocation), MESSAGE_TYPE.LOCATION);
+					fireMessageFromManager(new Position(lastLocation), inAppMessageType.LOCATION);
 				} else {
-					Log.i(LOGTAG, "requesting Location");
-//					locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, manager);
-					locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, manager);
-					started = true;
-					// Looper.myLooper().quit();
+					handler.post(new Runnable() {
+						
+						@Override
+						public void run() {
+							Log.i(LOGTAG, "requesting Location");
+//							locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, manager);
+							locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, manager);
+							started = true;
+							// Looper.myLooper().quit();
+							
+						}
+					});
+					
 				}
 
 			}

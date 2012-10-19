@@ -18,6 +18,7 @@ import com.android.helpme.demo.utils.UserInterface;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -33,7 +34,7 @@ import android.widget.ListView;
  * @author Andreas Wieland
  *
  */
-public class FoundHelperActivity extends Activity implements DrawManager {
+public class HelperActivity extends Activity implements DrawManager {
 	private ListView listView;
 	public static ArrayAdapter<String> adapter;
 	private ArrayList<String> data;
@@ -56,7 +57,7 @@ public class FoundHelperActivity extends Activity implements DrawManager {
 		}
 
 		listView.setAdapter(adapter);
-		MessageOrchestrator.getInstance().setDrawManager(DRAWMANAGER_TYPE.LIST, this);
+		MessageOrchestrator.getInstance().addDrawManager(DRAWMANAGER_TYPE.LIST, this);
 
 		listView.setOnItemClickListener(new OnItemClickListener() {
 
@@ -66,20 +67,42 @@ public class FoundHelperActivity extends Activity implements DrawManager {
 				String[] name = adapter.getItem(position).split(":");
 				UserInterface user = UserManager.getInstance().getUserByName(name[1]);
 				if (user != null) {
-					showPosition(user, view);
+					showPosition(user);
 				}
-
-
 			}
 		});
 	}
 
-	private Runnable addUser(final User user){
+	private Runnable addUser(final User user, final Context context){
 		return new Runnable() {
 
 			@Override
 			public void run() {
 				adapter.add(user.toString());
+				
+				AlertDialog.Builder dlgAlert = new AlertDialog.Builder(context);
+				dlgAlert.setTitle("new Help Assignment");
+				dlgAlert.setMessage("Do you want to help: " + user.getName() +" ?");
+				dlgAlert.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						showPosition(user);
+					}
+					
+				});
+				
+				dlgAlert.setNegativeButton("No", new DialogInterface.OnClickListener() {
+					
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						
+					}
+				});
+
+				dlgAlert.create().show();
+
+				
 			}
 		};
 	}
@@ -88,25 +111,14 @@ public class FoundHelperActivity extends Activity implements DrawManager {
 	@Override
 	public void drawThis(Object object) {
 		if (object instanceof User) {
-			handler.post(addUser((User)object));
+			handler.post(addUser((User)object, this));
 		}
 	}
 
-	public void showPosition(UserInterface user, View view) {
+	public void showPosition(UserInterface user) {
 		Intent myIntent = new Intent(this.getApplicationContext(), Maps.class);
 		startActivity(myIntent);
-		//		AlertDialog.Builder dlgAlert = new AlertDialog.Builder(view.getContext());
-		//		dlgAlert.setTitle(user.toString());
-		//		dlgAlert.setMessage(user.toString() + "\n" +user.getPosition().toString());
-		//		dlgAlert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-		//			
-		//			@Override
-		//			public void onClick(DialogInterface dialog, int which) {
-		//			}
-		//
-		//		});
-		//		
-		//		dlgAlert.create().show();
+
 	}
 
 }

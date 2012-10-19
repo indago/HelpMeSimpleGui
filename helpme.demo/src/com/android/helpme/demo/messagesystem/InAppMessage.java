@@ -7,19 +7,19 @@ package com.android.helpme.demo.messagesystem;
 public class InAppMessage {
 	public static final String LOGTAG = InAppMessage.class.getSimpleName();
 	
-	public InAppMessage(Object source, Object object, MESSAGE_TYPE type){
+	public InAppMessage(Object source, Object object, inAppMessageType type){
 		this.source = source;
 		this.object = object;
 		this.type = type;
 	}
 	private Object object;
-	private MESSAGE_TYPE type;
+	private inAppMessageType type;
 	private Object source;
 	
-	public synchronized MESSAGE_TYPE getType() {
+	public synchronized inAppMessageType getType() {
 		return type;
 	}
-	public synchronized void setType(MESSAGE_TYPE type) {
+	public synchronized void setType(inAppMessageType type) {
 		this.type = type;
 	}
 	public synchronized Object getObject() {

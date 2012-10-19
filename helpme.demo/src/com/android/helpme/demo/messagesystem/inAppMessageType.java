@@ -4,7 +4,7 @@ package com.android.helpme.demo.messagesystem;
  * @author Andreas Wieland
  *
  */
-public enum MESSAGE_TYPE {
+public enum inAppMessageType {
 	NULL,
 	ERROR,
 	STRING,

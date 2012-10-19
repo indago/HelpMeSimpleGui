@@ -9,5 +9,4 @@ public interface PositionManagerInterface extends LocationListener {
 	public  Runnable stopLocationTracking();
 
 	public  boolean isStarted();
-
 }

@@ -14,7 +14,7 @@ import com.android.helpme.demo.manager.interfaces.RabbitMQManagerInterface;
 import com.android.helpme.demo.messagesystem.AbstractMessageSystem;
 import com.android.helpme.demo.messagesystem.AbstractMessageSystemInterface;
 import com.android.helpme.demo.messagesystem.InAppMessage;
-import com.android.helpme.demo.messagesystem.MESSAGE_TYPE;
+import com.android.helpme.demo.messagesystem.inAppMessageType;
 
 import android.location.Location;
 import android.util.Log;
@@ -78,14 +78,16 @@ public class MessageOrchestrator extends MessageHandler implements MessageOrches
 			fireError(new WrongObjectType(event, InAppMessage.class));
 		}
 		InAppMessage message = (InAppMessage) event.getNewValue();
-		if (message.getType() == MESSAGE_TYPE.ERROR) {
+		if (message.getType() == inAppMessageType.ERROR) {
 			Log.e(((AbstractMessageSystemInterface)message.getSource()).getLogTag(), ((Exception)message.getObject()).toString());
 		}else if (message.getSource() instanceof RabbitMQManagerInterface) {
 			handleRabbitMQMessages(message);
 		}else if (message.getSource() instanceof PositionManager) {
-			handleLocationMessage(message);
+			handlePositionMessage(message);
 		}else if (message.getSource() instanceof UserManager) {
 			handleUserMessages(message);
+		}else{
+			Log.e(LOGTAG, "no handle Method defined for: " + message.getObject().toString() );
 		}
 	}
 
@@ -114,7 +116,7 @@ public class MessageOrchestrator extends MessageHandler implements MessageOrches
 	 * @see com.android.helpme.demo.manager.MessageOrchestratorInterface#setDrawManager(com.android.helpme.demo.DrawManager.DRAWMANAGER_TYPE, com.android.helpme.demo.DrawManager)
 	 */
 	@Override
-	public void setDrawManager(DrawManager.DRAWMANAGER_TYPE type,DrawManager drawManager) {
+	public void addDrawManager(DrawManager.DRAWMANAGER_TYPE type,DrawManager drawManager) {
 		this.drawManagerMap.put(type, drawManager);	
 	}
 	

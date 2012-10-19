@@ -25,5 +25,9 @@ public interface UserInterface {
 	public GeoPoint getGeoPoint();
 	
 	public void updatePosition(Position position);
+	
+	public void addMessage(Message message);
+	
+	public Message getMessage();
 
 }

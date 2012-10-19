@@ -54,7 +54,7 @@ public class LoginActivity extends Activity implements DrawManager{
 		ThreadPool.getThreadPool(10);
 
 		orchestrator = MessageOrchestrator.getInstance();
-		orchestrator.setDrawManager(DRAWMANAGER_TYPE.LOGIN, this);
+		orchestrator.addDrawManager(DRAWMANAGER_TYPE.LOGIN, this);
 		orchestrator.listenToMessageSystem(RabbitMQManager.getInstance());
 		orchestrator.listenToMessageSystem(PositionManager.getInstance(this));
 		orchestrator.listenToMessageSystem(UserManager.getInstance());
@@ -93,11 +93,11 @@ public class LoginActivity extends Activity implements DrawManager{
 					UserManager.getInstance().setThisUser(user,android_id);
 					
 					if (user.getHelfer()) {
-						Intent myIntent = new Intent(context, FoundHelperActivity.class);
+						Intent myIntent = new Intent(context, HelperActivity.class);
 						startActivity(myIntent);
 						finish();
 					}else {
-						Intent myIntent = new Intent(context, MainActivity.class);
+						Intent myIntent = new Intent(context, SeekerActivity.class);
 						startActivity(myIntent);
 						finish();
 					}

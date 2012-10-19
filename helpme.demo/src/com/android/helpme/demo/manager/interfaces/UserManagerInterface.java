@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import android.app.Activity;
 
+import com.android.helpme.demo.utils.Message;
 import com.android.helpme.demo.utils.User;
 import com.android.helpme.demo.utils.UserInterface;
 
@@ -17,5 +18,9 @@ public interface UserManagerInterface {
 	public  UserInterface getUserById(String id);
 
 	public  Runnable readUserFromProperty(Activity activity);
+	
+	public Runnable addRequest();
+	
+	public Runnable addAcknowlegement(Message request);
 
 }

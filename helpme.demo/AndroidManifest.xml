@@ -32,12 +32,12 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".gui.MainActivity"
+            android:name=".gui.SeekerActivity"
             android:label="@string/title_activity_main"
             android:screenOrientation="portrait" >
         </activity>
         <activity
-            android:name=".gui.FoundHelperActivity"
+            android:name=".gui.HelperActivity"
             android:label="@string/title_activity_foundhelper"
             android:screenOrientation="portrait" >
         </activity>

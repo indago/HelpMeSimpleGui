@@ -11,17 +11,20 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.w3c.dom.Element;
 
+import android.content.res.Resources.Theme;
+import android.graphics.Path.Direction;
 import android.location.Location;
 import android.util.Log;
 
 import com.android.helpme.demo.exceptions.UnkownMessageType;
 import com.android.helpme.demo.exceptions.WrongObjectType;
 import com.android.helpme.demo.gui.DrawManager;
-import com.android.helpme.demo.gui.MainActivity;
+import com.android.helpme.demo.gui.SeekerActivity;
 import com.android.helpme.demo.gui.DrawManager.DRAWMANAGER_TYPE;
 import com.android.helpme.demo.manager.interfaces.MessageHandlerInterface;
 import com.android.helpme.demo.manager.interfaces.MessageOrchestratorInterface;
 import com.android.helpme.demo.manager.interfaces.RabbitMQManagerInterface;
+import com.android.helpme.demo.manager.interfaces.RabbitMQManagerInterface.ExchangeType;
 import com.android.helpme.demo.messagesystem.AbstractMessageSystem;
 import com.android.helpme.demo.messagesystem.InAppMessage;
 import com.android.helpme.demo.utils.ThreadPool;
@@ -38,20 +41,31 @@ public abstract class MessageHandler extends AbstractMessageSystem implements Me
 
 	abstract protected boolean reloadDatabase();
 
-	protected void handleLocationMessage(InAppMessage message) {
+	/**
+	 * Handels the Messages form the {@link PositionManager}
+	 * @param message
+	 */
+	protected void handlePositionMessage(InAppMessage message) {
 		switch (message.getType()) {
 		case LOCATION:
-			if (!(message.getObject() instanceof PositionInterface)) {
+			if (!(message.getObject() instanceof Position)) {
 				fireError(new WrongObjectType(message.getObject(), Position.class));
 				return;
 			}
-			PositionInterface position = (PositionInterface) message.getObject();
+			Position position = (Position) message.getObject();
 			JSONObject object = new JSONObject();
 			object = UserManager.getInstance().getThisUser().getJsonObject();
+			UserManager.getInstance().getThisUser().updatePosition(position);
 			object.put(User.POSITION, position.getJSON());
 
-			ThreadPool.runTask(PositionManager.getInstance().stopLocationTracking());
-			ThreadPool.runTask(RabbitMQManager.getInstance().sendString(object.toString()));
+			//ThreadPool.runTask(PositionManager.getInstance().stopLocationTracking());
+			if (UserManager.getInstance().thisUser().getHelfer()) {
+				ThreadPool.runTask(RabbitMQManager.getInstance().sendStringToSubscribedChannels(object.toString()));
+			}else {
+				ThreadPool.runTask(RabbitMQManager.getInstance().sendStringToSubscribedChannels(object.toString()));
+				ThreadPool.runTask(RabbitMQManager.getInstance().sendStringOnMain(object.toString()));
+			}
+			
 			break;
 
 		default:
@@ -60,6 +74,10 @@ public abstract class MessageHandler extends AbstractMessageSystem implements Me
 		}
 	}
 
+	/**
+	 * Handels the Messages form the {@link RabbitMQManager} 
+	 * @param message
+	 */
 	protected void handleRabbitMQMessages(InAppMessage message) {
 		switch (message.getType()) {
 		case CONNECTED:
@@ -67,28 +85,21 @@ public abstract class MessageHandler extends AbstractMessageSystem implements Me
 				fireError(new WrongObjectType(message.getObject(), RabbitMQManager.class));
 				return;
 			}
-			ThreadPool.runTask(RabbitMQManager.getInstance().getString());
+			ThreadPool.runTask(RabbitMQManager.getInstance().subscribeToMainChannel());
 			break;
-		case SEND:
-			// TODO
-			break;
+
 		case USER:
 			if (!(message.getObject() instanceof User)) {
 				fireError(new WrongObjectType(message.getObject(), User.class));
 				return;
 			}
-			
 			User user = (User) message.getObject();
-			if (UserManager.getInstance().isUserSet() && UserManager.getInstance().getThisUser().getHelfer() && !user.getHelfer()) {
-				ThreadPool.runTask(PositionManager.getInstance().startLocationTracking());
-			}
-			UserManager.getInstance().addUser(user);
-			if (getDrawManager(DRAWMANAGER_TYPE.LIST) == null) {
-				getDrawManager(DRAWMANAGER_TYPE.MAIN).drawThis(user);
-			} else {
-				getDrawManager(DRAWMANAGER_TYPE.LIST).drawThis(user);
-			}
 
+			if (UserManager.getInstance().getThisUser().getHelfer()) {
+				handleIncomingUserAsHelper(user);
+			}else {
+				handleIncomingUserAsHelperSeeker(user);
+			}
 
 			break;
 
@@ -98,6 +109,39 @@ public abstract class MessageHandler extends AbstractMessageSystem implements Me
 		}
 	}
 
+	/**
+	 * if this user is a Helper this Method will be called and starts the List {@link DrawManager}
+	 * @param incomingUser
+	 */
+	private void handleIncomingUserAsHelper(User incomingUser){
+		ThreadPool.runTask(PositionManager.getInstance().startLocationTracking());
+		ThreadPool.runTask(RabbitMQManager.getInstance().subscribeToChannel(incomingUser.getId(), ExchangeType.driect));
+
+		UserManager.getInstance().addUser(incomingUser);
+		if (getDrawManager(DRAWMANAGER_TYPE.LIST) == null) {
+			getDrawManager(DRAWMANAGER_TYPE.SEEKER).drawThis(incomingUser);
+		} else {
+			getDrawManager(DRAWMANAGER_TYPE.LIST).drawThis(incomingUser);
+		}
+	}
+
+	/**
+	 * if this user is a Help Seeker this Method will be called and starts the Map {@link DrawManager}
+	 * @param incomingUser
+	 */
+	private void handleIncomingUserAsHelperSeeker(User incomingUser){
+		UserManager.getInstance().addUser(incomingUser);
+		if (getDrawManager(DRAWMANAGER_TYPE.MAP) == null) {
+			getDrawManager(DRAWMANAGER_TYPE.SEEKER).drawThis(incomingUser);
+		} else {
+			getDrawManager(DRAWMANAGER_TYPE.MAP).drawThis(incomingUser);
+		}
+	}
+
+	/**
+	 * Handles Messages from the {@link UserManager}
+	 * @param message
+	 */
 	protected void handleUserMessages(InAppMessage message) {
 		switch (message.getType()) {
 		case USER:
@@ -114,97 +158,4 @@ public abstract class MessageHandler extends AbstractMessageSystem implements Me
 			break;
 		}
 	}
-
-	/**
-	 * handles messages from Stomp Connection
-	 * 
-	 * @param message
-	 */
-	// protected void handleStompMessages(Message message) {
-	// Element element = (Element) message.getObject();
-	// Long id;
-	// switch (message.getType()) {
-	// case APPOINTMENT:
-	// id = new Long(element.getAttribute("id"));
-	// Appointment appointment = AppointmentDB.getDB().getAppointment(id);
-	// appointment.setStatus(Status.valueOf(element.getAttribute("status")));
-	// ThreadPool.runTask(AppointmentDB.getDB().show(id));
-	// break;
-	// case PREPTASK:
-	// id = new Long(element.getAttribute("id"));
-	// Subtask preptask = SubTaskFromAppointmentDB.getDB().getPrepTask(id);
-	// preptask.setStatus(Status.valueOf(element.getAttribute("status")));
-	// ThreadPool.runTask(SubTaskFromAppointmentDB.getDB().show(id));
-	// break;
-	// case SUBTASK:
-	// id = new Long(element.getAttribute("id"));
-	// Subtask subtask = SubTaskFromTaskDB.getDB().getSubtask(id);
-	// subtask.setStatus(Status.valueOf(element.getAttribute("status")));
-	// ThreadPool.runTask(SubTaskFromTaskDB.getDB().show(id));
-	// break;
-	// case TASK:
-	// id = new Long(element.getAttribute("id"));
-	// Task task = TaskDB.getDB().getTask(id);
-	// task.setStatus(Status.valueOf(element.getAttribute("status")));
-	// ThreadPool.runTask(TaskDB.getDB().show(id));
-	// break;
-	// case ITEM:
-	// id = new Long(element.getAttribute("id"));
-	// Item item = ItemDB.getDB().getItem(id);
-	// item.setStatus(Status.valueOf(element.getAttribute("status")));
-	// ThreadPool.runTask(ItemDB.getDB().show(id));
-	// break;
-	// case JOURNEY:
-	// case APPOINTMENT_REMINDER:
-	// case PREPTASK_REMINDER:
-	// id = new Long(element.getAttribute("id"));
-	// ArrayList<Status> buttons = new ArrayList<Status>();
-	// if (new Boolean(element.getAttribute("startable")).booleanValue() ) {
-	// buttons.add(Status.STARTABLE);
-	// }
-	// if (new Boolean(element.getAttribute("confirmable")).booleanValue()) {
-	// buttons.add(Status.CONFIRMABLE);
-	// }
-	// if (new Boolean(element.getAttribute("cancelable")).booleanValue()) {
-	// buttons.add(Status.CANCELABLE);
-	// }
-	// if (new Boolean(element.getAttribute("snoozable")).booleanValue()) {
-	// buttons.add(Status.SNOOZEABLE);
-	// }
-	//
-	// ThreadPool.runTask(SQLConnection.getConnection().getReminder(id,buttons,message.getType()));
-	// break;
-	// case CONFIG_CHANGE:
-	// Long timestamp = new Long(element.getAttribute("timestamp"));
-	// timestamp *= 1000;
-	// Calendar calendar = Calendar.getInstance();
-	// calendar.setTime(getDay());
-	// calendar.add(Calendar.DAY_OF_YEAR, 1);
-	// long day = getDay().getTime();
-	// long dayafter = calendar.getTime().getTime();
-	// if (timestamp >= day && timestamp <= dayafter) {
-	// ThreadPool.runTask(new Runnable() {
-	//
-	// public void run() {
-	// reloadDatabase();
-	// }
-	// });
-	// } else {
-	// int blub = 1;
-	// blub++;
-	// }
-	// break;
-	// case LOGIN:
-	// // TODO login handle
-	// break;
-	// case LOGOUT:
-	// // TODO logout handle
-	// break;
-	//
-	// default:
-	// fireError(new UnkownMessageType(STOMPConnection.class));
-	// break;
-	// }
-	// }
-
 }

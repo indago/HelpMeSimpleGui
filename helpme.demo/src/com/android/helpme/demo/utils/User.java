@@ -21,17 +21,20 @@ public class User implements UserInterface {
 	public static final String POSITION = "Position";
 	public static final String PICTURE = "Picture";
 	public static final String ID = "id";
+	public static final String MESSAGE = "Message";
 	
 	private String name;
 	private String id;
 	private Boolean helfer;
 	private Position position;
 	private String pic; //TODO
+	private Message message;
 
 	public User(String id,String name, Boolean helfer,String pic) {
 		this.name = name;
 		this.helfer = helfer;
 		this.id = id;
+		this.pic = pic;
 	}
 
 	public User(JSONObject object) {
@@ -119,7 +122,7 @@ public class User implements UserInterface {
 
 	@Override
 	public void updatePosition(Position position) {
-		if (position == null) {
+		if (this.position == null) {
 			this.position = position;
 		}else if (SimpleSelectionStrategy.isPositionRelevant(getPosition(), position)) {
 			this.position = position;
@@ -129,5 +132,16 @@ public class User implements UserInterface {
 	@Override
 	public String getPicture() {
 		return this.pic;
+	}
+
+	@Override
+	public void addMessage(Message message) {
+		this.message = message;
+		
+	}
+
+	@Override
+	public Message getMessage() {
+		return this.message;
 	}
 }

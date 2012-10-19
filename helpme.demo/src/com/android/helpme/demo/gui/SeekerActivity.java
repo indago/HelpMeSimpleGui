@@ -38,7 +38,7 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-public class MainActivity extends Activity implements DrawManager{
+public class SeekerActivity extends Activity implements DrawManager{
 	private static final String LOG_TAG = "MainActivity"; 
 	
 	private Button buttonHelpMe;
@@ -61,7 +61,7 @@ public class MainActivity extends Activity implements DrawManager{
 	
 	private void init(){
 		orchestrator = MessageOrchestrator.getInstance();
-		orchestrator.setDrawManager(DRAWMANAGER_TYPE.MAIN,this);
+		orchestrator.addDrawManager(DRAWMANAGER_TYPE.SEEKER,this);
 		wireButton();
 	}
 	
@@ -75,7 +75,7 @@ public class MainActivity extends Activity implements DrawManager{
 				progressBar.setVisibility(ProgressBar.VISIBLE);
 				buttonHelpMe.setActivated(false);
 				buttonHelpMe.setClickable(false);
-				uihandler.post (PositionManager.getInstance().startLocationTracking());
+				ThreadPool.runTask((PositionManager.getInstance().startLocationTracking()));
 			}
 		});
 	}
@@ -89,7 +89,7 @@ public class MainActivity extends Activity implements DrawManager{
 	public void drawThis(Object object) {
 		if (object instanceof User) {
 //			progressBar.setVisibility(ProgressBar.INVISIBLE);
-			Intent myIntent = new Intent(this.getApplicationContext(), FoundHelperActivity.class);
+			Intent myIntent = new Intent(this.getApplicationContext(), Maps.class);
 			startActivity(myIntent);
 		}
 

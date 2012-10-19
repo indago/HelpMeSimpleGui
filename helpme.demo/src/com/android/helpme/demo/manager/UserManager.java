@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.Properties;
 import java.util.Set;
 
+import org.json.JSONException;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -23,7 +24,8 @@ import com.android.helpme.demo.manager.interfaces.UserManagerInterface;
 import com.android.helpme.demo.messagesystem.AbstractMessageSystem;
 import com.android.helpme.demo.messagesystem.AbstractMessageSystemInterface;
 import com.android.helpme.demo.messagesystem.InAppMessage;
-import com.android.helpme.demo.messagesystem.MESSAGE_TYPE;
+import com.android.helpme.demo.messagesystem.inAppMessageType;
+import com.android.helpme.demo.utils.Message;
 import com.android.helpme.demo.utils.User;
 import com.android.helpme.demo.utils.UserInterface;
 
@@ -58,6 +60,10 @@ public class UserManager extends AbstractMessageSystem implements UserManagerInt
 	}
 
 	public UserInterface getThisUser() {
+		return thisUser;
+	}
+	
+	public UserInterface thisUser() {
 		return thisUser;
 	}
 
@@ -155,7 +161,7 @@ public class UserManager extends AbstractMessageSystem implements UserManagerInt
 						list.add(new User(object));
 					}
 					Log.i(LOGTAG, "The properties are now loaded");
-					fireMessageFromManager(list, MESSAGE_TYPE.USER);
+					fireMessageFromManager(list, inAppMessageType.USER);
 				} catch (IOException e) {
 					fireError(e);
 				} catch (ParseException e) {
@@ -182,6 +188,26 @@ public class UserManager extends AbstractMessageSystem implements UserManagerInt
 	@Override
 	public UserInterface getUserById(String id) {
 		return users.get(id);
+	}
+
+	@Override
+	public Runnable addRequest() {
+		return new Runnable() {
+			
+			@Override
+			public void run() {
+				synchronized (thisUser) {
+					thisUser.addMessage(Message.generateHelpRequest());
+				}
+			}
+		};
+//		
+	}
+
+	@Override
+	public Runnable addAcknowlegement(Message request) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
