@@ -6,12 +6,17 @@ import javax.crypto.spec.PSource;
 
 import org.json.simple.JSONObject;
 
+import com.android.helpme.demo.MyService;
 import com.android.helpme.demo.R;
 import com.android.helpme.demo.R.id;
 import com.android.helpme.demo.R.layout;
+import com.android.helpme.demo.manager.HistoryManager;
 import com.android.helpme.demo.manager.MessageOrchestrator;
 import com.android.helpme.demo.manager.PositionManager;
+import com.android.helpme.demo.manager.RabbitMQManager;
 import com.android.helpme.demo.manager.UserManager;
+import com.android.helpme.demo.manager.interfaces.RabbitMQManagerInterface.ExchangeType;
+import com.android.helpme.demo.utils.ThreadPool;
 import com.android.helpme.demo.utils.User;
 import com.android.helpme.demo.utils.UserInterface;
 
@@ -36,7 +41,7 @@ import android.widget.ListView;
  */
 public class HelperActivity extends Activity implements DrawManager {
 	private ListView listView;
-	public static ArrayAdapter<String> adapter;
+	private ArrayAdapter<UserInterface> adapter;
 	private ArrayList<String> data;
 	private Handler handler;
 
@@ -45,16 +50,12 @@ public class HelperActivity extends Activity implements DrawManager {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.foundhelper);
 		listView = (ListView) findViewById(R.id.foundHelper);
-		data = new ArrayList<String>();
 		handler = new Handler();
 
-		adapter = new ArrayAdapter<String>(this, R.layout.simplerow,data);
-		for (UserInterface user : UserManager.getInstance().getUsers()) {
-			if (user == null) {
-				break;
-			}
-			adapter.add(user.toString());
-		}
+		data = new ArrayList<String>();
+
+		adapter = new ArrayAdapter<UserInterface>(this, R.layout.simplerow);
+		adapter.addAll(UserManager.getInstance().getUsers());
 
 		listView.setAdapter(adapter);
 		MessageOrchestrator.getInstance().addDrawManager(DRAWMANAGER_TYPE.LIST, this);
@@ -63,23 +64,20 @@ public class HelperActivity extends Activity implements DrawManager {
 
 			@Override
 			public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-				String[] name = adapter.getItem(position).split(":");
-				UserInterface user = UserManager.getInstance().getUserByName(name[1]);
-				if (user != null) {
-					showPosition(user);
-				}
+				UserInterface user = adapter.getItem(position);
+				showPosition(user);
 			}
 		});
 	}
 
-	private Runnable addUser(final User user, final Context context){
+	private Runnable addUser(final UserInterface user, final Context context){
 		return new Runnable() {
 
 			@Override
 			public void run() {
-				adapter.add(user.toString());
-				
+				adapter.add(user);
+				data.add(user.getId());
+
 				AlertDialog.Builder dlgAlert = new AlertDialog.Builder(context);
 				dlgAlert.setTitle("new Help Assignment");
 				dlgAlert.setMessage("Do you want to help: " + user.getName() +" ?");
@@ -89,20 +87,20 @@ public class HelperActivity extends Activity implements DrawManager {
 					public void onClick(DialogInterface dialog, int which) {
 						showPosition(user);
 					}
-					
+
 				});
-				
+
 				dlgAlert.setNegativeButton("No", new DialogInterface.OnClickListener() {
-					
+
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
-						
+
 					}
 				});
 
 				dlgAlert.create().show();
 
-				
+
 			}
 		};
 	}
@@ -111,14 +109,16 @@ public class HelperActivity extends Activity implements DrawManager {
 	@Override
 	public void drawThis(Object object) {
 		if (object instanceof User) {
-			handler.post(addUser((User)object, this));
+			if (!data.contains(((User) object).getId())) {
+				handler.post(addUser((User)object, this));
+			}
+			
 		}
 	}
 
 	public void showPosition(UserInterface user) {
+		HistoryManager.getInstance().startNewTask(user);
 		Intent myIntent = new Intent(this.getApplicationContext(), Maps.class);
 		startActivity(myIntent);
-
 	}
-
 }

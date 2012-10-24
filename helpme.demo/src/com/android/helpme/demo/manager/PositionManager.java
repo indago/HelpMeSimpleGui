@@ -42,8 +42,8 @@ public class PositionManager extends AbstractMessageSystem implements PositionMa
 	/**
 	 * 
 	 */
-	private PositionManager(Activity activity) {
-		locationManager = (LocationManager) activity.getSystemService(Context.LOCATION_SERVICE);
+	private PositionManager(Context context) {
+		locationManager = (LocationManager) context.getSystemService(Context.LOCATION_SERVICE);
 		lastLocation = null;
 		started = false;
 		handler = new Handler();
@@ -53,9 +53,9 @@ public class PositionManager extends AbstractMessageSystem implements PositionMa
 		return manager;
 	}
 
-	public static PositionManager getInstance(Activity activity) {
+	public static PositionManager getInstance(Context context) {
 		if (manager == null) {
-			manager = new PositionManager(activity);
+			manager = new PositionManager(context);
 		}
 		return manager;
 	}
@@ -116,7 +116,7 @@ public class PositionManager extends AbstractMessageSystem implements PositionMa
 		lastLocation = location;
 		Position wayPointData = new Position(location);
 		Log.i(getLogTag(), "new Location arrived");
-		
+
 		fireMessageFromManager(wayPointData, inAppMessageType.LOCATION);
 	}
 
@@ -150,31 +150,32 @@ public class PositionManager extends AbstractMessageSystem implements PositionMa
 				if (started) {
 					return;
 				}
-//				if (Looper.myLooper() == null) {
-//					Looper.prepare();
-//				}
-//				;
+				//				if (Looper.myLooper() == null) {
+				//					Looper.prepare();
+				//				}
+				//				;
 
 				lastLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 				if (lastLocation != null && SimpleSelectionStrategy.isPositionRelevant(lastLocation)) {
 					fireMessageFromManager(new Position(lastLocation), inAppMessageType.LOCATION);
-				} else {
-					handler.post(new Runnable() {
-						
-						@Override
-						public void run() {
-							Log.i(LOGTAG, "requesting Location");
-//							locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, manager);
-							locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, manager);
-							started = true;
-							// Looper.myLooper().quit();
-							
-						}
-					});
-					
-				}
+				} 
+
+
+				handler.post(new Runnable() {
+
+					@Override
+					public void run() {
+						Log.i(LOGTAG, "requesting Location");
+						locationManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 0, 0, manager);
+						locationManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 0, 0, manager);
+						started = true;
+						// Looper.myLooper().quit();
+
+					}
+				});
 
 			}
+
 		};
 
 	}

@@ -6,6 +6,8 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 
+import com.android.helpme.demo.MyService;
+import com.android.helpme.demo.MyService.LocalBinder;
 import com.android.helpme.demo.exceptions.WrongObjectType;
 import com.android.helpme.demo.gui.DrawManager;
 import com.android.helpme.demo.gui.DrawManager.DRAWMANAGER_TYPE;
@@ -15,8 +17,15 @@ import com.android.helpme.demo.messagesystem.AbstractMessageSystem;
 import com.android.helpme.demo.messagesystem.AbstractMessageSystemInterface;
 import com.android.helpme.demo.messagesystem.InAppMessage;
 import com.android.helpme.demo.messagesystem.inAppMessageType;
+import com.android.helpme.demo.utils.User;
 
+import android.app.Service;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.location.Location;
+import android.os.IBinder;
 import android.util.Log;
 
 
@@ -26,7 +35,8 @@ public class MessageOrchestrator extends MessageHandler implements MessageOrches
 	private InAppMessage message;
 	private ArrayList<String> arrayList;
 	private HashMap<DrawManager.DRAWMANAGER_TYPE, DrawManager> drawManagerMap;
-	
+	private MyService mService;
+	private boolean mBound = false;
 
 	public static MessageOrchestrator getInstance(){
 		if (messageOrchestrator == null) {
@@ -119,5 +129,35 @@ public class MessageOrchestrator extends MessageHandler implements MessageOrches
 	public void addDrawManager(DrawManager.DRAWMANAGER_TYPE type,DrawManager drawManager) {
 		this.drawManagerMap.put(type, drawManager);	
 	}
+	
+	public void bindToService(Service service){
+		Intent intent = new Intent(service, MyService.class);
+		service.bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+	}
+	
+	@Override
+	public void showNotification(User user) {
+		if (mBound) {
+			mService.showNotification(user);
+		}
+	}
+	
+	 /** Defines callbacks for service binding, passed to bindService() */
+    private ServiceConnection mConnection = new ServiceConnection() {
+
+        @Override
+        public void onServiceConnected(ComponentName className,
+                IBinder service) {
+            // We've bound to LocalService, cast the IBinder and get LocalService instance
+            LocalBinder binder = (LocalBinder) service;
+            mService = binder.getService();
+            mBound = true;
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName arg0) {
+            mBound = false;
+        }
+    };
 	
 }

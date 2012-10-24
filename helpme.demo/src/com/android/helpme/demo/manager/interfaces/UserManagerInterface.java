@@ -3,24 +3,24 @@ package com.android.helpme.demo.manager.interfaces;
 import java.util.ArrayList;
 
 import android.app.Activity;
+import android.content.Context;
 
-import com.android.helpme.demo.utils.Message;
 import com.android.helpme.demo.utils.User;
 import com.android.helpme.demo.utils.UserInterface;
 
 public interface UserManagerInterface {
 
-	public  void addUser(User position);
+	public  boolean addUser(User position);
 
 	public  ArrayList<User> getUsers();
 
 	public  UserInterface getUserByName(String userName);
 	public  UserInterface getUserById(String id);
 
-	public  Runnable readUserFromProperty(Activity activity);
+	public  Runnable readUserFromProperty(Context context);
 	
-	public Runnable addRequest();
+	public UserInterface thisUser();
 	
-	public Runnable addAcknowlegement(Message request);
+	public UserInterface getThisUser();
 
 }

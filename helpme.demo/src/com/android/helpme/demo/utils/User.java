@@ -28,7 +28,6 @@ public class User implements UserInterface {
 	private Boolean helfer;
 	private Position position;
 	private String pic; //TODO
-	private Message message;
 
 	public User(String id,String name, Boolean helfer,String pic) {
 		this.name = name;
@@ -114,10 +113,14 @@ public class User implements UserInterface {
 
 	@Override
 	public GeoPoint getGeoPoint() {
-		int latitude = (int)(getPosition().getLatitude() * 1e6);
-		int longitude = (int)(getPosition().getLongitude() * 1e6);
-		GeoPoint point = new GeoPoint(latitude,longitude);
-		return point;
+		if (getPosition() != null) {
+			int latitude = (int)(getPosition().getLatitude() * 1e6);
+			int longitude = (int)(getPosition().getLongitude() * 1e6);
+			GeoPoint point = new GeoPoint(latitude,longitude);
+			return point;
+		}else
+			return null;
+		
 	}
 
 	@Override
@@ -132,16 +135,5 @@ public class User implements UserInterface {
 	@Override
 	public String getPicture() {
 		return this.pic;
-	}
-
-	@Override
-	public void addMessage(Message message) {
-		this.message = message;
-		
-	}
-
-	@Override
-	public Message getMessage() {
-		return this.message;
 	}
 }

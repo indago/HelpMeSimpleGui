@@ -11,6 +11,7 @@ import org.json.simple.parser.ParseException;
 
 import android.util.Log;
 
+import com.android.helpme.demo.MyService;
 import com.android.helpme.demo.manager.interfaces.RabbitMQManagerInterface;
 import com.android.helpme.demo.messagesystem.AbstractMessageSystem;
 import com.android.helpme.demo.messagesystem.AbstractMessageSystemInterface;

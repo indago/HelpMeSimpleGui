@@ -3,6 +3,8 @@ package com.android.helpme.demo.messagesystem;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+
+import com.android.helpme.demo.utils.ThreadPool;
 /**
  * 
  * @author Andreas Wieland
@@ -13,6 +15,13 @@ public abstract class AbstractMessageSystem extends PropertyChangeSupport implem
 	
 	public AbstractMessageSystem() {
 		super(message);
+	}
+	/**
+	 * Runs a {@link Runnable} in the {@link ThreadPool}
+	 * @param runnable
+	 */
+	protected void run(Runnable runnable){
+		ThreadPool.runTask(runnable);
 	}
 	
 	/**

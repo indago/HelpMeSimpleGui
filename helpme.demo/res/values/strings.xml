@@ -3,13 +3,20 @@
     <string name="app_name">IndagoDemo</string>
     <string name="hello_world">Hello world!</string>
     <string name="menu_settings">Settings</string>
-    <string name="title_activity_main">MainActivity</string>
+    <string name="title_activity_seeker">Are you looking for Help?</string>
     <string name="writesth">please write something</string>
     <string name="waitingtext">waiting for new information</string>
     <string name="helpButton">help Me</string>
-    <string name="title_activity_foundhelper">found Helper</string>
+    <string name="title_activity_helper">List of Help requests</string>
+    <string name="title_activity_login">Please Login</string>
     <string name="Helper">Helfender</string>
     <string name="LostPerson">Hilfesuchender</string>
     <string name="title_activity_maps">Maps</string>
+    <string name="local_service_started">service started</string>
+    <string name="local_service_stopped">service stopped</string>
+    <string name="new_help_request">New Help request</string>
+    <string name="this_person">This Person is looking for help: </string>
+    <string name="title_activity_helper_coming">Stay put a Helper is coming for you</string>
+    <string name="distance_to_helper">Distance to Helper is: </string>
 
 </resources>

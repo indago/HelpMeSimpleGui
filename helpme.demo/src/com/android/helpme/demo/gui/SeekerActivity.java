@@ -16,10 +16,12 @@ import com.android.helpme.demo.R;
 import com.android.helpme.demo.R.id;
 import com.android.helpme.demo.R.layout;
 import com.android.helpme.demo.gui.DrawManager.DRAWMANAGER_TYPE;
+import com.android.helpme.demo.manager.HistoryManager;
 import com.android.helpme.demo.manager.MessageOrchestrator;
 import com.android.helpme.demo.manager.PositionManager;
 import com.android.helpme.demo.manager.RabbitMQManager;
 import com.android.helpme.demo.manager.UserManager;
+import com.android.helpme.demo.manager.interfaces.HistoryManagerInterface;
 import com.android.helpme.demo.manager.interfaces.MessageOrchestratorInterface;
 import com.android.helpme.demo.utils.ThreadPool;
 import com.android.helpme.demo.utils.User;
@@ -56,6 +58,7 @@ public class SeekerActivity extends Activity implements DrawManager{
 		buttonHelpMe = (Button) findViewById(R.id.helpButton);
 		progressBar = (ProgressBar) findViewById(R.id.progressBar1);
 		progressBar.setVisibility(ProgressBar.INVISIBLE);
+		buttonHelpMe.setVisibility(Button.VISIBLE);
 		init();
 	}
 	
@@ -73,9 +76,10 @@ public class SeekerActivity extends Activity implements DrawManager{
 			@Override
 			public void onClick(View v) {
 				progressBar.setVisibility(ProgressBar.VISIBLE);
-				buttonHelpMe.setActivated(false);
-				buttonHelpMe.setClickable(false);
-				ThreadPool.runTask((PositionManager.getInstance().startLocationTracking()));
+//				buttonHelpMe.setActivated(false);
+//				buttonHelpMe.setClickable(false);
+				buttonHelpMe.setVisibility(Button.INVISIBLE);
+				HistoryManager.getInstance().startNewTask(); 
 			}
 		});
 	}
@@ -89,7 +93,7 @@ public class SeekerActivity extends Activity implements DrawManager{
 	public void drawThis(Object object) {
 		if (object instanceof User) {
 //			progressBar.setVisibility(ProgressBar.INVISIBLE);
-			Intent myIntent = new Intent(this.getApplicationContext(), Maps.class);
+			Intent myIntent = new Intent(this.getApplicationContext(), HelperCommingActivity.class);
 			startActivity(myIntent);
 		}
 

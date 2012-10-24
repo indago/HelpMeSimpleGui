@@ -5,9 +5,12 @@ package com.android.helpme.demo.gui;
 
 import java.util.ArrayList;
 
+import android.R.color;
 import android.app.AlertDialog;
 import android.content.Context;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.provider.CalendarContract.Colors;
 
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.OverlayItem;
@@ -17,19 +20,19 @@ import com.google.android.maps.OverlayItem;
  *
  */
 public class MyItemnizedOverlay extends ItemizedOverlay<OverlayItem> {
-	ArrayList<OverlayItem> items;
-	Context context;
+	private ArrayList<OverlayItem> items;
+	private Context context;
 
 	public MyItemnizedOverlay(Drawable drawable) {
 		super(boundCenterBottom(drawable));
 		items = new ArrayList<OverlayItem>();
 	}
-	
+
 	public MyItemnizedOverlay(Drawable defaultMarker, Context context) {
-		  super(boundCenterBottom(defaultMarker));
-		  this.context = context;
-		  items = new ArrayList<OverlayItem>();
-		}
+		super(boundCenterBottom(defaultMarker));
+		this.context = context;
+		items = new ArrayList<OverlayItem>();
+	}
 
 	public void addOverlay(OverlayItem overlay) {
 		items.add(overlay);
@@ -48,11 +51,15 @@ public class MyItemnizedOverlay extends ItemizedOverlay<OverlayItem> {
 
 	@Override
 	protected boolean onTap(int index) {
-	  OverlayItem item = items.get(index);
-	  AlertDialog.Builder dialog = new AlertDialog.Builder(context);
-	  dialog.setTitle(item.getTitle());
-	  dialog.setMessage(item.getSnippet());
-	  dialog.show();
-	  return true;
+		OverlayItem item = items.get(index);
+		AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+		dialog.setTitle(item.getTitle());
+		dialog.setMessage(item.getSnippet());
+		dialog.show();
+		return true;
+	}
+
+	public void removeItem(OverlayItem item) {
+		items.remove(item);
 	}
 }

@@ -2,10 +2,12 @@ package com.android.helpme.demo.gui;
 
 import java.util.ArrayList;
 
+import com.android.helpme.demo.MyService;
 import com.android.helpme.demo.R;
 import com.android.helpme.demo.R.id;
 import com.android.helpme.demo.R.layout;
 import com.android.helpme.demo.gui.DrawManager.DRAWMANAGER_TYPE;
+import com.android.helpme.demo.manager.HistoryManager;
 import com.android.helpme.demo.manager.MessageOrchestrator;
 import com.android.helpme.demo.manager.PositionManager;
 import com.android.helpme.demo.manager.RabbitMQManager;
@@ -34,33 +36,42 @@ public class LoginActivity extends Activity implements DrawManager{
 	public static ArrayAdapter<String> adapter;
 	private ArrayList<String> data;
 	private ArrayList<User> list;
-	private MessageOrchestratorInterface orchestrator;
 	private Handler uihandler;
+	private MessageOrchestrator orchestrator;
 
 	//TODO
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.foundhelper);
+		this.setTitle(R.string.title_activity_login);
+		
+		Intent intent = new Intent(this, MyService.class);
+		this.startService(intent);
 
 		uihandler = new Handler();
 		listView = (ListView) findViewById(R.id.foundHelper);
 		data = new ArrayList<String>();
 		init();
-		uihandler.post(showNotification("Select", "Bitte wählen sie einen Benutzer aus", this));
+		
+		
+		
+		uihandler.post(showMessageBox("Select", "Bitte wählen sie einen Benutzer aus", this));
 	}
 
 	private void init(){
 		ThreadPool.getThreadPool(10);
 
 		orchestrator = MessageOrchestrator.getInstance();
-		orchestrator.addDrawManager(DRAWMANAGER_TYPE.LOGIN, this);
 		orchestrator.listenToMessageSystem(RabbitMQManager.getInstance());
 		orchestrator.listenToMessageSystem(PositionManager.getInstance(this));
 		orchestrator.listenToMessageSystem(UserManager.getInstance());
+		orchestrator.listenToMessageSystem(HistoryManager.getInstance());
 
 		ThreadPool.runTask(RabbitMQManager.getInstance().connect());
 		ThreadPool.runTask(UserManager.getInstance().readUserFromProperty(this));
+		
+		orchestrator.addDrawManager(DRAWMANAGER_TYPE.LOGIN, this);
 
 		adapter = new ArrayAdapter<String>(this, R.layout.simplerow,data);
 		for (UserInterface user : UserManager.getInstance().getUsers()) {
@@ -107,7 +118,7 @@ public class LoginActivity extends Activity implements DrawManager{
 		});
 	}
 
-	private Runnable showNotification(final String title,final String text,final Context context){
+	private Runnable showMessageBox(final String title,final String text,final Context context){
 		return new Runnable() {
 			
 			@Override

@@ -21,10 +21,13 @@ import com.android.helpme.demo.exceptions.WrongObjectType;
 import com.android.helpme.demo.gui.DrawManager;
 import com.android.helpme.demo.gui.SeekerActivity;
 import com.android.helpme.demo.gui.DrawManager.DRAWMANAGER_TYPE;
+import com.android.helpme.demo.manager.interfaces.HistoryManagerInterface;
 import com.android.helpme.demo.manager.interfaces.MessageHandlerInterface;
 import com.android.helpme.demo.manager.interfaces.MessageOrchestratorInterface;
+import com.android.helpme.demo.manager.interfaces.PositionManagerInterface;
 import com.android.helpme.demo.manager.interfaces.RabbitMQManagerInterface;
 import com.android.helpme.demo.manager.interfaces.RabbitMQManagerInterface.ExchangeType;
+import com.android.helpme.demo.manager.interfaces.UserManagerInterface;
 import com.android.helpme.demo.messagesystem.AbstractMessageSystem;
 import com.android.helpme.demo.messagesystem.InAppMessage;
 import com.android.helpme.demo.utils.ThreadPool;
@@ -40,6 +43,12 @@ import com.android.helpme.demo.utils.position.PositionInterface;
 public abstract class MessageHandler extends AbstractMessageSystem implements MessageHandlerInterface{
 
 	abstract protected boolean reloadDatabase();
+	abstract public void showNotification(User user);
+
+	protected static RabbitMQManagerInterface rabbitMQManagerInterface = RabbitMQManager.getInstance();
+	protected static UserManagerInterface userManagerInterface = UserManager.getInstance();
+	protected static PositionManagerInterface positionManagerInterface = PositionManager.getInstance();
+	protected static HistoryManagerInterface historyManagerInterface = HistoryManager.getInstance();
 
 	/**
 	 * Handels the Messages form the {@link PositionManager}
@@ -53,19 +62,12 @@ public abstract class MessageHandler extends AbstractMessageSystem implements Me
 				return;
 			}
 			Position position = (Position) message.getObject();
-			JSONObject object = new JSONObject();
-			object = UserManager.getInstance().getThisUser().getJsonObject();
-			UserManager.getInstance().getThisUser().updatePosition(position);
-			object.put(User.POSITION, position.getJSON());
+			userManagerInterface.thisUser().updatePosition(position);
 
-			//ThreadPool.runTask(PositionManager.getInstance().stopLocationTracking());
-			if (UserManager.getInstance().thisUser().getHelfer()) {
-				ThreadPool.runTask(RabbitMQManager.getInstance().sendStringToSubscribedChannels(object.toString()));
-			}else {
-				ThreadPool.runTask(RabbitMQManager.getInstance().sendStringToSubscribedChannels(object.toString()));
-				ThreadPool.runTask(RabbitMQManager.getInstance().sendStringOnMain(object.toString()));
+			if (getDrawManager(DRAWMANAGER_TYPE.MAP) != null) {
+				getDrawManager(DRAWMANAGER_TYPE.MAP).drawThis(userManagerInterface.getThisUser());
 			}
-			
+			historyManagerInterface.getTask().sendPosition(position);
 			break;
 
 		default:
@@ -85,7 +87,7 @@ public abstract class MessageHandler extends AbstractMessageSystem implements Me
 				fireError(new WrongObjectType(message.getObject(), RabbitMQManager.class));
 				return;
 			}
-			ThreadPool.runTask(RabbitMQManager.getInstance().subscribeToMainChannel());
+			run(rabbitMQManagerInterface.subscribeToMainChannel());
 			break;
 
 		case USER:
@@ -94,11 +96,14 @@ public abstract class MessageHandler extends AbstractMessageSystem implements Me
 				return;
 			}
 			User user = (User) message.getObject();
-
-			if (UserManager.getInstance().getThisUser().getHelfer()) {
-				handleIncomingUserAsHelper(user);
-			}else {
-				handleIncomingUserAsHelperSeeker(user);
+			
+			if (!user.getId().equalsIgnoreCase(userManagerInterface.getThisUser().getId())) {
+				
+				if (userManagerInterface.getThisUser().getHelfer()) {
+					handleIncomingUserAsHelper(user);
+				}else {
+					handleIncomingUserAsHelperSeeker(user);
+				}
 			}
 
 			break;
@@ -114,12 +119,11 @@ public abstract class MessageHandler extends AbstractMessageSystem implements Me
 	 * @param incomingUser
 	 */
 	private void handleIncomingUserAsHelper(User incomingUser){
-		ThreadPool.runTask(PositionManager.getInstance().startLocationTracking());
-		ThreadPool.runTask(RabbitMQManager.getInstance().subscribeToChannel(incomingUser.getId(), ExchangeType.driect));
-
-		UserManager.getInstance().addUser(incomingUser);
-		if (getDrawManager(DRAWMANAGER_TYPE.LIST) == null) {
-			getDrawManager(DRAWMANAGER_TYPE.SEEKER).drawThis(incomingUser);
+		if (userManagerInterface.addUser(incomingUser)) {
+			showNotification(incomingUser);
+		}
+		if (getDrawManager(DRAWMANAGER_TYPE.MAP) != null) {
+			getDrawManager(DRAWMANAGER_TYPE.MAP).drawThis(incomingUser);
 		} else {
 			getDrawManager(DRAWMANAGER_TYPE.LIST).drawThis(incomingUser);
 		}
@@ -130,11 +134,14 @@ public abstract class MessageHandler extends AbstractMessageSystem implements Me
 	 * @param incomingUser
 	 */
 	private void handleIncomingUserAsHelperSeeker(User incomingUser){
-		UserManager.getInstance().addUser(incomingUser);
-		if (getDrawManager(DRAWMANAGER_TYPE.MAP) == null) {
-			getDrawManager(DRAWMANAGER_TYPE.SEEKER).drawThis(incomingUser);
+		 userManagerInterface.addUser(incomingUser);
+		 historyManagerInterface.getTask().updatePosition(incomingUser);
+
+		if (getDrawManager(DRAWMANAGER_TYPE.HELPERCOMMING) != null) {
+			getDrawManager(DRAWMANAGER_TYPE.HELPERCOMMING).drawThis(incomingUser);
 		} else {
-			getDrawManager(DRAWMANAGER_TYPE.MAP).drawThis(incomingUser);
+			
+			getDrawManager(DRAWMANAGER_TYPE.SEEKER).drawThis(incomingUser);
 		}
 	}
 

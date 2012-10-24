@@ -15,6 +15,7 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.res.AssetManager;
 import android.content.res.Resources;
 import android.provider.Settings.Secure;
@@ -25,7 +26,6 @@ import com.android.helpme.demo.messagesystem.AbstractMessageSystem;
 import com.android.helpme.demo.messagesystem.AbstractMessageSystemInterface;
 import com.android.helpme.demo.messagesystem.InAppMessage;
 import com.android.helpme.demo.messagesystem.inAppMessageType;
-import com.android.helpme.demo.utils.Message;
 import com.android.helpme.demo.utils.User;
 import com.android.helpme.demo.utils.UserInterface;
 
@@ -59,10 +59,12 @@ public class UserManager extends AbstractMessageSystem implements UserManagerInt
 		return userSet;
 	}
 
+	@Override
 	public UserInterface getThisUser() {
 		return thisUser;
 	}
 	
+	@Override
 	public UserInterface thisUser() {
 		return thisUser;
 	}
@@ -98,11 +100,13 @@ public class UserManager extends AbstractMessageSystem implements UserManagerInt
 	 * @see com.android.helpme.demo.manager.UserManagerInterface#addUser(com.android.helpme.demo.utils.User)
 	 */
 	@Override
-	public void addUser(User user) {
+	public boolean addUser(User user) {
 		if (users.containsKey(user.getId())) {
 			users.get(user.getId()).updatePosition(user.getPosition());
+			return false;
 		}else{
 			users.put(user.getId(), user);
+			return true;
 		}
 	}
 
@@ -138,12 +142,12 @@ public class UserManager extends AbstractMessageSystem implements UserManagerInt
 	 * @see com.android.helpme.demo.manager.UserManagerInterface#readUserFromProperty(android.app.Activity)
 	 */
 	@Override
-	public Runnable readUserFromProperty(final Activity activity) {
+	public Runnable readUserFromProperty(final Context context) {
 		return new Runnable() {
 
 			@Override
 			public void run() {
-				Resources resources = activity.getResources();
+				Resources resources = context.getResources();
 				AssetManager assetManager = resources.getAssets();
 
 				// Read from the /assets directory
@@ -189,25 +193,4 @@ public class UserManager extends AbstractMessageSystem implements UserManagerInt
 	public UserInterface getUserById(String id) {
 		return users.get(id);
 	}
-
-	@Override
-	public Runnable addRequest() {
-		return new Runnable() {
-			
-			@Override
-			public void run() {
-				synchronized (thisUser) {
-					thisUser.addMessage(Message.generateHelpRequest());
-				}
-			}
-		};
-//		
-	}
-
-	@Override
-	public Runnable addAcknowlegement(Message request) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
 }
