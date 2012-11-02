@@ -3,6 +3,10 @@
  */
 package com.android.helpme.demo.utils;
 
+import java.util.Observable;
+import java.util.Timer;
+import java.util.TimerTask;
+
 import org.json.simple.JSONObject;
 
 import com.android.helpme.demo.manager.PositionManager;
@@ -18,11 +22,18 @@ import com.android.helpme.demo.utils.position.Position;
  * @author Andreas Wieland
  *
  */
-public class Task {
+public class Task extends Observable{
+	public static final String ID = "id", START_TIME ="start_time", STOP_TIME="stop_time",SUCCESSFUL ="successful",FAILED ="failed", RUNNING = "running", LOOKING = "looking", STATE = "state";
+	public static final int LONGDISTANCE = 1000;
+	public static final int MIDDISTANCE = 100;
+	public static final int SHORTDISTANCE = 10;
+	public static final long TIMERDELAY = 1000;
 	private UserInterface user;
+	private Timer timer;
 	private boolean answered;
 	private String exchangeName;
 	private Position startPosition;
+	private String state;
 	UserManagerInterface userManagerInterface;
 	RabbitMQManagerInterface rabbitMQManagerInterface;
 	PositionManagerInterface positionManagerInterface;
@@ -36,6 +47,7 @@ public class Task {
 		positionManagerInterface = PositionManager.getInstance();
 		answered = false;
 		user = null;
+		state = null;
 	}
 
 	/**
@@ -48,6 +60,7 @@ public class Task {
 		startPosition = user.getPosition();
 		run(rabbitMQManagerInterface.subscribeToChannel(exchangeName, ExchangeType.fanout));
 		answered = true;
+		state = RUNNING;
 	}
 	
 	/**
@@ -57,6 +70,9 @@ public class Task {
 		run(positionManagerInterface.startLocationTracking());
 		exchangeName = userManagerInterface.getThisUser().getId();
 		run(rabbitMQManagerInterface.subscribeToChannel(exchangeName, ExchangeType.fanout));
+		state = RUNNING;
+		timer = new Timer();
+		timer.schedule(createTimerTask(), TIMERDELAY);
 	}
 	
 	public void sendPosition(Position position){
@@ -99,8 +115,65 @@ public class Task {
 		}
 	}
 	
-	public void stopTask() {
+	public boolean isUserInRange(int range) {
+		return userManagerInterface.getThisUser().getDistanceTo(user) <= range;
+	}
+	
+	public boolean isUserInShortDistance(){
+		return isUserInRange(SHORTDISTANCE);
+	}
+	
+	public boolean isUserInMidDistance() {
+		return isUserInRange(MIDDISTANCE);
+	}
+	
+	public boolean isUserInLongDistance() {
+		return isUserInRange(LONGDISTANCE);
+	}
+	
+	public void setSuccesfull() {
+		if (state.equalsIgnoreCase(RUNNING) && answered) {
+			state = SUCCESSFUL;
+		}
+		
+	}
+	
+	public String state(){
+		return state;
+	}
+	
+	public void setFailed() {
+		if (state.equalsIgnoreCase(RUNNING)) {
+			state = FAILED;
+		}
+	}
+	
+	public void stopUnfinishedTask(){
 		run(positionManagerInterface.stopLocationTracking());
 		run(rabbitMQManagerInterface.endSubscribtionToChannel(exchangeName));
+	}
+	
+	public JSONObject stopTask() {
+		run(positionManagerInterface.stopLocationTracking());
+		run(rabbitMQManagerInterface.endSubscribtionToChannel(exchangeName));
+		JSONObject jsonObject = new JSONObject();
+		jsonObject.put(ID, user.getId());
+		jsonObject.put(START_TIME, startPosition.getMeasureDateTime());
+		jsonObject.put(STOP_TIME, user.getPosition().getMeasureDateTime());
+		jsonObject.put(STATE, state);
+		return jsonObject;
+	}
+	
+	private TimerTask createTimerTask(){
+		return new TimerTask() {
+			
+			@Override
+			public void run() {
+				if (!answered) {
+					setChanged();
+					notifyObservers();
+				}
+			}
+		};
 	}
 }

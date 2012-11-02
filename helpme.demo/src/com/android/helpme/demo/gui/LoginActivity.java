@@ -2,7 +2,6 @@ package com.android.helpme.demo.gui;
 
 import java.util.ArrayList;
 
-import com.android.helpme.demo.MyService;
 import com.android.helpme.demo.R;
 import com.android.helpme.demo.R.id;
 import com.android.helpme.demo.R.layout;
@@ -13,6 +12,7 @@ import com.android.helpme.demo.manager.PositionManager;
 import com.android.helpme.demo.manager.RabbitMQManager;
 import com.android.helpme.demo.manager.UserManager;
 import com.android.helpme.demo.manager.interfaces.MessageOrchestratorInterface;
+import com.android.helpme.demo.rabbitMQ.RabbitMQService;
 import com.android.helpme.demo.utils.ThreadPool;
 import com.android.helpme.demo.utils.User;
 import com.android.helpme.demo.utils.UserInterface;
@@ -37,7 +37,7 @@ public class LoginActivity extends Activity implements DrawManager{
 	private ArrayList<String> data;
 	private ArrayList<User> list;
 	private Handler uihandler;
-	private MessageOrchestrator orchestrator;
+
 
 	//TODO
 	@Override
@@ -46,40 +46,30 @@ public class LoginActivity extends Activity implements DrawManager{
 		setContentView(R.layout.foundhelper);
 		this.setTitle(R.string.title_activity_login);
 		
-		Intent intent = new Intent(this, MyService.class);
-		this.startService(intent);
+//		Intent intent = new Intent(this, MyService.class);
+//		this.startService(intent);
 
 		uihandler = new Handler();
 		listView = (ListView) findViewById(R.id.foundHelper);
 		data = new ArrayList<String>();
 		init();
 		
-		
-		
 		uihandler.post(showMessageBox("Select", "Bitte wählen sie einen Benutzer aus", this));
 	}
 
 	private void init(){
-		ThreadPool.getThreadPool(10);
-
-		orchestrator = MessageOrchestrator.getInstance();
-		orchestrator.listenToMessageSystem(RabbitMQManager.getInstance());
-		orchestrator.listenToMessageSystem(PositionManager.getInstance(this));
-		orchestrator.listenToMessageSystem(UserManager.getInstance());
-		orchestrator.listenToMessageSystem(HistoryManager.getInstance());
-
-		ThreadPool.runTask(RabbitMQManager.getInstance().connect());
-		ThreadPool.runTask(UserManager.getInstance().readUserFromProperty(this));
+		MessageOrchestrator.getInstance().addDrawManager(DRAWMANAGER_TYPE.LOGIN, this);
 		
-		orchestrator.addDrawManager(DRAWMANAGER_TYPE.LOGIN, this);
-
 		adapter = new ArrayAdapter<String>(this, R.layout.simplerow,data);
-		for (UserInterface user : UserManager.getInstance().getUsers()) {
-			adapter.add(user.toString());
-		}
-
 		listView.setAdapter(adapter);
 		wireItemClick(this);
+		list = UserManager.getInstance().getUsers();
+		if (list.size() == 0) {
+			ThreadPool.runTask(UserManager.getInstance().readUserFromProperty(getApplicationContext()));
+		}
+		else {
+			uihandler.post(addUser());
+		}
 	}
 	
 	private void wireItemClick(final Context context) {
@@ -98,10 +88,7 @@ public class LoginActivity extends Activity implements DrawManager{
 					}
 				}
 				if (user != null) {
-					String android_id = Secure.getString(context.getContentResolver(),
-                            Secure.ANDROID_ID); 
-					
-					UserManager.getInstance().setThisUser(user,android_id);
+					ThreadPool.runTask(UserManager.getInstance().setThisUser(user, getApplicationContext()));
 					
 					if (user.getHelfer()) {
 						Intent myIntent = new Intent(context, HelperActivity.class);
@@ -160,5 +147,13 @@ public class LoginActivity extends Activity implements DrawManager{
 			list = (ArrayList<User>) object;
 			uihandler.post(addUser());
 		}
+	}
+	
+	public void onBackPressed() {};
+	
+	@Override
+	protected void onDestroy() {
+		MessageOrchestrator.getInstance().removeDrawManager(DRAWMANAGER_TYPE.LOGIN);
+		super.onDestroy();
 	}
 }

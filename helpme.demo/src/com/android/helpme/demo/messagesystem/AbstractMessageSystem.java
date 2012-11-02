@@ -11,7 +11,7 @@ import com.android.helpme.demo.utils.ThreadPool;
  *
  */
 public abstract class AbstractMessageSystem extends PropertyChangeSupport implements AbstractMessageSystemInterface{
-	protected static InAppMessage message = new InAppMessage(null, null, inAppMessageType.NULL);
+	protected static InAppMessage message = new InAppMessage(null, null, InAppMessageType.NULL);
 	
 	public AbstractMessageSystem() {
 		super(message);
@@ -40,10 +40,10 @@ public abstract class AbstractMessageSystem extends PropertyChangeSupport implem
 	 * @param exception
 	 */
 	protected void fireError(Exception exception){
-		InAppMessage newMessage = new InAppMessage(getManager(), exception, inAppMessageType.ERROR);
+		InAppMessage newMessage = new InAppMessage(getManager(), exception, InAppMessageType.ERROR);
 		InAppMessage oldMessage = getMessage();
 		if (oldMessage == null) {
-			oldMessage = new InAppMessage(null, null, inAppMessageType.NULL);
+			oldMessage = new InAppMessage(null, null, InAppMessageType.NULL);
 		}
 		firePropertyChange("Message", oldMessage, newMessage);
 		setMessage(newMessage);
@@ -54,7 +54,7 @@ public abstract class AbstractMessageSystem extends PropertyChangeSupport implem
 	 * @param object
 	 * @param type
 	 */
-	protected void fireMessageFromManager(Object object, inAppMessageType type) {
+	protected void fireMessageFromManager(Object object, InAppMessageType type) {
 		InAppMessage message = new InAppMessage(getManager(), object, type);
 		fireMessage(message);
 	}
@@ -66,7 +66,7 @@ public abstract class AbstractMessageSystem extends PropertyChangeSupport implem
 	protected void fireMessage(InAppMessage inAppMessage){
 		InAppMessage oldMessage = getMessage();
 		if (oldMessage == null) {
-			oldMessage = new InAppMessage(null, null, inAppMessageType.NULL);
+			oldMessage = new InAppMessage(null, null, InAppMessageType.NULL);
 		}
 		firePropertyChange("Message", oldMessage, inAppMessage);
 		setMessage(inAppMessage);

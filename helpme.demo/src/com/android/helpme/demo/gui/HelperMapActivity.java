@@ -13,6 +13,7 @@ import com.android.helpme.demo.R.id;
 import com.android.helpme.demo.R.layout;
 import com.android.helpme.demo.manager.MessageOrchestrator;
 import com.android.helpme.demo.manager.UserManager;
+import com.android.helpme.demo.utils.Task;
 import com.android.helpme.demo.utils.ThreadPool;
 import com.android.helpme.demo.utils.User;
 import com.android.helpme.demo.utils.UserInterface;
@@ -24,6 +25,9 @@ import com.google.android.maps.MapView;
 import com.google.android.maps.Overlay;
 import com.google.android.maps.OverlayItem;
 
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.drawable.Drawable;
 import android.inputmethodservice.Keyboard.Key;
 import android.os.Bundle;
@@ -35,7 +39,7 @@ import android.util.Log;
  * @author Andreas Wieland
  *
  */
-public class Maps extends MapActivity implements DrawManager{
+public class HelperMapActivity extends MapActivity implements DrawManager{
 	private List<Overlay> mapOverlays;
 	private MyItemnizedOverlay overlay;
 	private MapController mapController;
@@ -72,10 +76,10 @@ public class Maps extends MapActivity implements DrawManager{
 
 		MessageOrchestrator.getInstance().addDrawManager(DRAWMANAGER_TYPE.MAP, this);
 	}
-	
+
 	private Runnable addMarkerThisUser(){
 		return new Runnable() {
-			
+
 			@Override
 			public void run() {
 				try {
@@ -84,9 +88,9 @@ public class Maps extends MapActivity implements DrawManager{
 						handler.post(addMarker(UserManager.getInstance().getThisUser()));
 					}
 				} catch (InterruptedException e) {
-					Log.i(Maps.class.getSimpleName(), e.toString());
+					Log.i(HelperMapActivity.class.getSimpleName(), e.toString());
 				}
-				
+
 			}
 		};
 	}
@@ -99,21 +103,21 @@ public class Maps extends MapActivity implements DrawManager{
 				if (overlayitem != null) {
 					overlay.removeItem(overlayitem);
 				}
-				
+
 				if (userInterface.getId().equalsIgnoreCase(UserManager.getInstance().thisUser().getId())) {
 					overlayitem = new OverlayItem(userInterface.getGeoPoint(), userInterface.getName(),"Sie");
 					overlayitem.setMarker(green_marker);
-					
+
 				}else {
 					// not us but
 					if ( userInterface.getHelfer()) { // a helper
 						overlayitem = new OverlayItem(userInterface.getGeoPoint(), userInterface.getName(),"ein Helfer");
 						overlayitem.setMarker(blue_marker);
-						
+
 					}else{// a help seeker
 						overlayitem = new OverlayItem(userInterface.getGeoPoint(), userInterface.getName(),"ein Hilfesuchender");
 						overlayitem.setMarker(red_marker);
-						
+
 					}
 				}
 
@@ -135,43 +139,67 @@ public class Maps extends MapActivity implements DrawManager{
 			User user = (User) object;
 			handler.post(addMarker(user));
 		}
+		else if (object instanceof Task) {
+			Task task = (Task) object;
+			handler.post(showInRangeMessageBox(this));
+		}
 
 	}
-	
+
 	private void setZoomLevel(){
 		Object[] keys =  map.keySet().toArray();
 		OverlayItem item;
 		if (keys.length > 1) {
 			int minLatitude = Integer.MAX_VALUE;
-		    int maxLatitude = Integer.MIN_VALUE;
-		    int minLongitude = Integer.MAX_VALUE;
-		    int maxLongitude = Integer.MIN_VALUE;
+			int maxLatitude = Integer.MIN_VALUE;
+			int minLongitude = Integer.MAX_VALUE;
+			int maxLongitude = Integer.MIN_VALUE;
 
-		    for (Object key : keys) {
-		    	item = map.get((String)key);
-		    	GeoPoint p = item.getPoint();
-		        int lati = p.getLatitudeE6();
-		        int lon = p.getLongitudeE6();
+			for (Object key : keys) {
+				item = map.get((String)key);
+				GeoPoint p = item.getPoint();
+				int lati = p.getLatitudeE6();
+				int lon = p.getLongitudeE6();
 
-		        maxLatitude = Math.max(lati, maxLatitude);
-		        minLatitude = Math.min(lati, minLatitude);
-		        maxLongitude = Math.max(lon, maxLongitude);
-		        minLongitude = Math.min(lon, minLongitude);
-		    }
-		    mapController.zoomToSpan(Math.abs(maxLatitude - minLatitude),
-		            Math.abs(maxLongitude - minLongitude));
-		    mapController.animateTo(new GeoPoint((maxLatitude + minLatitude) / 2,
-		            (maxLongitude + minLongitude) / 2));
-			
+				maxLatitude = Math.max(lati, maxLatitude);
+				minLatitude = Math.min(lati, minLatitude);
+				maxLongitude = Math.max(lon, maxLongitude);
+				minLongitude = Math.min(lon, minLongitude);
+			}
+			mapController.zoomToSpan(Math.abs(maxLatitude - minLatitude),
+					Math.abs(maxLongitude - minLongitude));
+			mapController.animateTo(new GeoPoint((maxLatitude + minLatitude) / 2,
+					(maxLongitude + minLongitude) / 2));
+
 		}else{
 			String key = (String) keys[0];
 			item = map.get(key);
 			mapController.animateTo(item.getPoint());
 			while(mapController.zoomIn()){
-				
+
 			}
 			mapController.zoomOut();
 		}
 	}
 
+	private Runnable showInRangeMessageBox( final Context context){
+		return new Runnable() {
+
+			@Override
+			public void run() {
+				AlertDialog.Builder dlgAlert = new AlertDialog.Builder(context);
+				dlgAlert.setTitle(getString(R.string.in_range_title));
+				dlgAlert.setMessage(getString(R.string.in_range_text));
+				dlgAlert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+					}
+
+				});
+				AlertDialog dialog = dlgAlert.create();
+				dialog.show();
+			}
+		};
+	}
 }

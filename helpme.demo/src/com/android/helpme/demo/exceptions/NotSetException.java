@@ -1,5 +1,8 @@
 package com.android.helpme.demo.exceptions;
 
+import com.android.helpme.demo.manager.RabbitMQManager;
+import com.android.helpme.demo.rabbitMQ.RabbitMQService;
+
 /**
  * 
  * @author azak

@@ -1,25 +1,28 @@
 package com.android.helpme.demo.messagesystem;
+
+import java.io.Serializable;
+
 /**
  * 
  * @author Andreas Wieland
  *
  */
-public class InAppMessage {
+public class InAppMessage implements Serializable{
 	public static final String LOGTAG = InAppMessage.class.getSimpleName();
 	
-	public InAppMessage(Object source, Object object, inAppMessageType type){
+	public InAppMessage(Object source, Object object, InAppMessageType type){
 		this.source = source;
 		this.object = object;
 		this.type = type;
 	}
 	private Object object;
-	private inAppMessageType type;
+	private InAppMessageType type;
 	private Object source;
 	
-	public synchronized inAppMessageType getType() {
+	public synchronized InAppMessageType getType() {
 		return type;
 	}
-	public synchronized void setType(inAppMessageType type) {
+	public synchronized void setType(InAppMessageType type) {
 		this.type = type;
 	}
 	public synchronized Object getObject() {

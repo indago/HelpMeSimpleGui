@@ -43,7 +43,6 @@ import com.android.helpme.demo.utils.position.PositionInterface;
 public abstract class MessageHandler extends AbstractMessageSystem implements MessageHandlerInterface{
 
 	abstract protected boolean reloadDatabase();
-	abstract public void showNotification(User user);
 
 	protected static RabbitMQManagerInterface rabbitMQManagerInterface = RabbitMQManager.getInstance();
 	protected static UserManagerInterface userManagerInterface = UserManager.getInstance();
@@ -82,30 +81,36 @@ public abstract class MessageHandler extends AbstractMessageSystem implements Me
 	 */
 	protected void handleRabbitMQMessages(InAppMessage message) {
 		switch (message.getType()) {
+		case UNBOUND_FROM_SERVICE:
+			//TODO
+			break;
+		case BOUND_TO_SERVICE:
+			run(rabbitMQManagerInterface.connect());
+			break;
+
 		case CONNECTED:
-			if (!(message.getObject() instanceof RabbitMQManagerInterface)) {
-				fireError(new WrongObjectType(message.getObject(), RabbitMQManager.class));
-				return;
-			}
 			run(rabbitMQManagerInterface.subscribeToMainChannel());
 			break;
 
-		case USER:
+		case RECEIVED_DATA:
 			if (!(message.getObject() instanceof User)) {
 				fireError(new WrongObjectType(message.getObject(), User.class));
 				return;
 			}
 			User user = (User) message.getObject();
-			
+
+			if (!UserManager.getInstance().isUserSet()) {
+				return;
+			}
+
 			if (!user.getId().equalsIgnoreCase(userManagerInterface.getThisUser().getId())) {
-				
+
 				if (userManagerInterface.getThisUser().getHelfer()) {
 					handleIncomingUserAsHelper(user);
 				}else {
 					handleIncomingUserAsHelperSeeker(user);
 				}
 			}
-
 			break;
 
 		default:
@@ -120,10 +125,18 @@ public abstract class MessageHandler extends AbstractMessageSystem implements Me
 	 */
 	private void handleIncomingUserAsHelper(User incomingUser){
 		if (userManagerInterface.addUser(incomingUser)) {
-			showNotification(incomingUser);
+			run(rabbitMQManagerInterface.showNotification(incomingUser));
 		}
+
+		historyManagerInterface.getTask().updatePosition(incomingUser);
 		if (getDrawManager(DRAWMANAGER_TYPE.MAP) != null) {
-			getDrawManager(DRAWMANAGER_TYPE.MAP).drawThis(incomingUser);
+			
+			if (historyManagerInterface.getTask().isUserInShortDistance()) {
+				getDrawManager(DRAWMANAGER_TYPE.MAP).drawThis(historyManagerInterface.getTask());
+				
+			}else{
+				getDrawManager(DRAWMANAGER_TYPE.MAP).drawThis(incomingUser);
+			}
 		} else {
 			getDrawManager(DRAWMANAGER_TYPE.LIST).drawThis(incomingUser);
 		}
@@ -134,14 +147,27 @@ public abstract class MessageHandler extends AbstractMessageSystem implements Me
 	 * @param incomingUser
 	 */
 	private void handleIncomingUserAsHelperSeeker(User incomingUser){
-		 userManagerInterface.addUser(incomingUser);
-		 historyManagerInterface.getTask().updatePosition(incomingUser);
+		userManagerInterface.addUser(incomingUser);
+		historyManagerInterface.getTask().updatePosition(incomingUser);
 
 		if (getDrawManager(DRAWMANAGER_TYPE.HELPERCOMMING) != null) {
 			getDrawManager(DRAWMANAGER_TYPE.HELPERCOMMING).drawThis(incomingUser);
 		} else {
-			
+
 			getDrawManager(DRAWMANAGER_TYPE.SEEKER).drawThis(incomingUser);
+		}
+	}
+	
+	protected void handleHistoryMessages(InAppMessage message) {
+		switch (message.getType()) {
+		case TIMEOUT:
+			historyManagerInterface.stopTask();
+			getDrawManager(DRAWMANAGER_TYPE.SEEKER).drawThis(message.getObject());
+			break;
+
+		default:
+			fireError(new UnkownMessageType());
+			break;
 		}
 	}
 
@@ -151,13 +177,19 @@ public abstract class MessageHandler extends AbstractMessageSystem implements Me
 	 */
 	protected void handleUserMessages(InAppMessage message) {
 		switch (message.getType()) {
-		case USER:
+		case LOADED:
+			getDrawManager(DRAWMANAGER_TYPE.SWITCHER).drawThis(message.getObject());
+
+			break;
+		case RECEIVED_DATA:
 			if (!(message.getObject() instanceof ArrayList<?>)) {
 				fireError(new WrongObjectType(message.getObject(), ArrayList.class));
 				return;
 			}
 
-			getDrawManager(DRAWMANAGER_TYPE.LOGIN).drawThis(message.getObject());
+			if (getDrawManager(DRAWMANAGER_TYPE.LOGIN) != null) {
+				getDrawManager(DRAWMANAGER_TYPE.LOGIN).drawThis(message.getObject());
+			}
 			break;
 
 		default:

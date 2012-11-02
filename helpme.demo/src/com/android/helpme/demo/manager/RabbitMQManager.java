@@ -1,47 +1,45 @@
 package com.android.helpme.demo.manager;
 
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Set;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 
-import android.util.Log;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 
-import com.android.helpme.demo.MyService;
+import com.android.helpme.demo.R;
+import com.android.helpme.demo.exceptions.UnboundException;
+import com.android.helpme.demo.exceptions.WrongObjectType;
 import com.android.helpme.demo.manager.interfaces.RabbitMQManagerInterface;
+import com.android.helpme.demo.manager.interfaces.UserManagerInterface;
 import com.android.helpme.demo.messagesystem.AbstractMessageSystem;
 import com.android.helpme.demo.messagesystem.AbstractMessageSystemInterface;
 import com.android.helpme.demo.messagesystem.InAppMessage;
-import com.android.helpme.demo.messagesystem.inAppMessageType;
+import com.android.helpme.demo.messagesystem.InAppMessageType;
+import com.android.helpme.demo.rabbitMQ.RabbitMQService;
+import com.android.helpme.demo.rabbitMQ.RabbitMQServiceMessages;
 import com.android.helpme.demo.utils.ThreadPool;
 import com.android.helpme.demo.utils.User;
-import com.rabbitmq.client.Channel;
-import com.rabbitmq.client.Connection;
-import com.rabbitmq.client.ConnectionFactory;
-import com.rabbitmq.client.ConsumerCancelledException;
-import com.rabbitmq.client.DefaultConsumer;
-import com.rabbitmq.client.Envelope;
-import com.rabbitmq.client.QueueingConsumer;
-import com.rabbitmq.client.ShutdownListener;
-import com.rabbitmq.client.ShutdownSignalException;
-import com.rabbitmq.client.AMQP.BasicProperties;
+import com.android.helpme.demo.utils.UserInterface;
 
-public class RabbitMQManager extends AbstractMessageSystem implements RabbitMQManagerInterface, ShutdownListener {
+public class RabbitMQManager extends AbstractMessageSystem implements RabbitMQManagerInterface{
 	public static final String LOGTAG = RabbitMQManager.class.getSimpleName();
-	private static String URL = "ec2-54-247-61-12.eu-west-1.compute.amazonaws.com";
 	private static RabbitMQManager rabbitMQManager;
-
+	private ArrayList<String> exchangeNames;
+	private Messenger messenger;
 	private InAppMessage message;
-	private ConnectionFactory factory;
-	private Connection connection;
-	private HashMap<String,Channel> subscribedChannels;
-	private Boolean connected = false;
-
-
+	private boolean bound;
+	private JSONParser parser;
 
 	public static RabbitMQManager getInstance() {
 		if (rabbitMQManager == null) {
@@ -49,6 +47,44 @@ public class RabbitMQManager extends AbstractMessageSystem implements RabbitMQMa
 		}
 		return rabbitMQManager;
 	}
+
+	private Handler handler = new Handler(){
+		public void handleMessage(android.os.Message msg) {
+			Bundle bundle = msg.getData();
+			InAppMessageType type= InAppMessageType.valueOf(bundle.getString(RabbitMQService.MESSAGE));
+			InAppMessage message = new InAppMessage(getManager(), null, type);
+			if (type == InAppMessageType.RECEIVED_DATA) {
+				JSONObject object;
+				try {
+					object = (JSONObject) parser.parse(bundle.getString(RabbitMQService.DATA_STRING));
+					message.setObject(new User(object));
+				} catch (ParseException e) {
+					fireError(e);
+				}
+				
+			}
+			fireMessage(message);
+		};
+	};
+
+	private ServiceConnection serviceConnection = new ServiceConnection() {
+
+		@Override
+		public void onServiceDisconnected(ComponentName name) {
+			messenger = null;
+			bound = false;
+			fireMessageFromManager(null, InAppMessageType.UNBOUND_FROM_SERVICE);
+			
+		}
+
+		@Override
+		public void onServiceConnected(ComponentName name, IBinder service) {
+			messenger = new Messenger(service);
+			bound = true;
+			fireMessageFromManager(messenger, InAppMessageType.BOUND_TO_SERVICE);
+			
+		}
+	};
 
 	/* (non-Javadoc)
 	 * @see com.android.helpme.demo.manager.RabbitMQManagerInterface#connect()
@@ -59,27 +95,36 @@ public class RabbitMQManager extends AbstractMessageSystem implements RabbitMQMa
 
 			@Override
 			public void run() {
-				if (connected) {
-					return;
-				}
 				try {
-					connection = factory.newConnection();
-					connected = true;
-					Log.i(LOGTAG, "connected to rabbitMQ");
-					fireMessageFromManager(rabbitMQManager, inAppMessageType.CONNECTED);
-				} catch (IOException e) {
+					sendToService(createConnectBundle());
+				} catch (RemoteException e) {
 					fireError(e);
 				}
-
 			}
 		};
-
+	}
+	
+	@Override
+	public Runnable disconnect() {
+		return new Runnable() {
+			
+			@Override
+			public void run() {
+				try {
+					sendToService(createDisconnectBundle());
+				} catch (RemoteException e) {
+					fireError(e);
+				}
+				
+			}
+		};
 	}
 
 	private RabbitMQManager() {
-		factory  = new ConnectionFactory();
-		factory.setHost(URL);
-		subscribedChannels = new HashMap<String, Channel>();
+		exchangeNames = new ArrayList<String>();
+		bound = false;
+		parser = new JSONParser();
+		//TODO Binding to service
 	}
 
 	/* (non-Javadoc)
@@ -127,36 +172,12 @@ public class RabbitMQManager extends AbstractMessageSystem implements RabbitMQMa
 	@Override
 	public Runnable subscribeToChannel(final String exchangeName, final ExchangeType type){
 		return new Runnable() {
-
+			
 			@Override
 			public void run() {
 				try {
-					// we create a new channel 
-					Channel channel = connection.createChannel();
-					channel.exchangeDeclare(exchangeName, type.name());
-					String queueName = channel.queueDeclare().getQueue();
-					channel.queueBind(queueName,exchangeName , "");
-					channel.addShutdownListener(rabbitMQManager);
-					
-					// we define what happens if we recieve a new Message
-					channel.basicConsume(queueName,new DefaultConsumer(channel){
-						@Override
-						public void handleDelivery(String consumerTag, Envelope envelope, BasicProperties properties, byte[] body) throws IOException {
-							String string = new String(body);
-							JSONParser parser = new JSONParser();
-							JSONObject object;
-							try {
-								object = (JSONObject) parser.parse(string);
-								User user = new User(object);
-								fireMessageFromManager(user, inAppMessageType.USER);
-							} catch (ParseException e) {
-								fireError(e);
-							}
-						}
-					});
-
-					subscribedChannels.put(exchangeName, channel);
-				} catch (IOException e) {
+					sendToService(createSubscribeToBundle(exchangeName, type));
+				} catch (RemoteException e) {
 					fireError(e);
 				}
 			}
@@ -166,30 +187,24 @@ public class RabbitMQManager extends AbstractMessageSystem implements RabbitMQMa
 	@Override
 	public Runnable sendStringOnChannel(final String string, final String exchangeName) {
 		return new Runnable() {
-
-			@Override
-			public void run() {
-				try {
-					Log.i(LOGTAG, "sending");
-					Channel channel = subscribedChannels.get(exchangeName);
-					if (channel != null) {
-						channel.basicPublish(exchangeName, "", null, string.getBytes());
-					}
-				} catch (IOException e) {
-					fireError(e);
-				}
-
-			}
-		};
-	}
-	
-	@Override
-	public Runnable sendStringToSubscribedChannels(final String string) {
-		return new Runnable() {
 			
 			@Override
 			public void run() {
-				Set<String> exchangeNames = subscribedChannels.keySet();
+				try {
+					sendToService(createSendDataBundle(exchangeName, string));
+				} catch (RemoteException e) {
+					fireError(e);
+				}
+			}
+		};
+	}
+
+	@Override
+	public Runnable sendStringToSubscribedChannels(final String string) {
+		return new Runnable() {
+
+			@Override
+			public void run() {
 				for (String exchangeName : exchangeNames) {
 					/**
 					 * we dont send the message on the Main channel
@@ -198,7 +213,7 @@ public class RabbitMQManager extends AbstractMessageSystem implements RabbitMQMa
 						ThreadPool.runTask(sendStringOnChannel(string, exchangeName));
 					}
 				}
-						
+
 			}
 		};
 	}
@@ -206,41 +221,106 @@ public class RabbitMQManager extends AbstractMessageSystem implements RabbitMQMa
 	@Override
 	public Runnable endSubscribtionToChannel(final String exchangeName) {
 		return new Runnable() {
-
+			
 			@Override
 			public void run() {
-				Channel channel = subscribedChannels.get(exchangeName);
-				if (channel != null) {
-					try {
-						channel.close(0,exchangeName);
-					} catch (IOException e) {
-						fireError(e);
-					}
+				try {
+					sendToService(createEndSubscribtionBundle(exchangeName));
+				} catch (RemoteException e) {
+					fireError(e);
 				}
 			}
 		};
 	}
 
 	@Override
-	public void shutdownCompleted(ShutdownSignalException arg0) {
-		String string = arg0.getMessage();
-		
-		/*
-		 * if by chance the Message was not set than we have to search each channel for the closed one
-		 */
-		if (string == null) {
-			Set<String> keys = subscribedChannels.keySet();
-			for (String key : keys) {
-				if (!subscribedChannels.get(key).isOpen()) {
-					string = key;
-					break;
+	public Runnable bindToService(final Context context) {
+		return new Runnable() {
+
+			@Override
+			public void run() {
+				Intent intent = null;
+				intent = new Intent(context, RabbitMQService.class);
+				//we create a new Messanger with our defined handler
+				Messenger messenger = new Messenger(handler);
+				intent.putExtra("MESSENGER", messenger);
+				context.bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE);
+			}
+		};
+	}
+	
+	@Override
+	public Runnable showNotification(final String text,final String title) {
+		return new Runnable() {
+			
+			@Override
+			public void run() {
+				try {
+					sendToService(createShowNotificationBundle(text, title));
+				} catch (RemoteException e) {
+					fireError(e);
 				}
 			}
+		};
+	}
+	
+	@Override
+	public Runnable showNotification(UserInterface userInterface) {
+		return showNotification("This Person needs your Help: " + userInterface.getName(), "New Help Request");
+	}
 
+	private void sendToService(Bundle bundle) throws RemoteException{
+		if (bound) {
+			Message message = new Message();
+			message.setData(bundle);
+			messenger.send(message);
+		}else {
+			fireError(new UnboundException());
 		}
-		synchronized (subscribedChannels) {
-			subscribedChannels.remove(string);
-		}
+	}
+	
+	
+	private Bundle createShowNotificationBundle(String text, String title){
+		Bundle bundle = new Bundle();
+		bundle.putString(RabbitMQService.MESSAGE, InAppMessageType.NOTIFICATION.name());
+		bundle.putString(RabbitMQService.TEXT, text);
+		bundle.putString(RabbitMQService.TITLE, title);
+		return bundle;
+	}
+	
+	private Bundle createSubscribeToBundle(String exchangeName, ExchangeType type){
+		Bundle bundle = new Bundle();
+		bundle.putString(RabbitMQService.MESSAGE, InAppMessageType.SUBSCRIBE.name());
+		bundle.putString(RabbitMQService.EXCHANGE_NAME, exchangeName);
+		bundle.putString(RabbitMQService.EXCHANGE_TYPE, type.name());
+		return bundle;
+	}
+	
+	private Bundle createSendDataBundle(String exchangeName, String data){
+		Bundle bundle = new Bundle();
+		bundle.putString(RabbitMQService.MESSAGE, InAppMessageType.SEND.name());
+		bundle.putString(RabbitMQService.EXCHANGE_NAME, exchangeName);
+		bundle.putString(RabbitMQService.DATA_STRING, data);
+		return bundle;
+	}
+	
+	private Bundle createConnectBundle(){
+		Bundle bundle = new Bundle();
+		bundle.putString(RabbitMQService.MESSAGE, InAppMessageType.CONNECTED.name());
+		return bundle;
+	}
+	
+	private Bundle createDisconnectBundle(){
+		Bundle bundle = new Bundle();
+		bundle.putString(RabbitMQService.MESSAGE, InAppMessageType.DISCONNECTED.name());
+		return bundle;
+	}
+	
+	private Bundle createEndSubscribtionBundle(String exchangeName){
+		Bundle bundle = new Bundle();
+		bundle.putString(RabbitMQService.MESSAGE, InAppMessageType.SUBSCRIBTION_ENDED.name());
+		bundle.putString(RabbitMQService.EXCHANGE_NAME, exchangeName);
+		return bundle;
 	}
 
 }

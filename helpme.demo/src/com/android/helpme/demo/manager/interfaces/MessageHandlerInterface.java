@@ -27,5 +27,7 @@ public interface MessageHandlerInterface {
 	 * @param drawManager
 	 */
 	public void addDrawManager(DrawManager.DRAWMANAGER_TYPE type, DrawManager drawManager);
+	
+	public void removeDrawManager(DrawManager.DRAWMANAGER_TYPE type);
 
 }

@@ -2,6 +2,10 @@ package com.android.helpme.demo.manager.interfaces;
 
 import java.io.IOException;
 
+import android.content.Context;
+import android.os.IBinder;
+
+import com.android.helpme.demo.utils.UserInterface;
 import com.rabbitmq.client.Channel;
 import com.rabbitmq.client.ShutdownSignalException;
 
@@ -14,6 +18,18 @@ public interface RabbitMQManagerInterface {
 	 * @return
 	 */
 	public  Runnable connect();
+	
+	/**
+	 * Disconnects to RabbitMQ
+	 * @return
+	 */
+	public Runnable disconnect();
+	/**
+	 * binds 
+	 * @param context
+	 * @return
+	 */
+	public Runnable bindToService(Context context);
 
 	/**
 	 * Sends {@link String} on main channel with the name "main"
@@ -59,7 +75,14 @@ public interface RabbitMQManagerInterface {
 	 * @return
 	 */
 	public Runnable endSubscribtionToChannel(String exchangeName);
-
-
 	
+	/**
+	 * Shows a Android Notification with the specified Text and Title 
+	 * @param text
+	 * @param title
+	 * @return
+	 */
+	public Runnable showNotification(String text, String title);
+	
+	public Runnable showNotification(UserInterface userInterface);
 }

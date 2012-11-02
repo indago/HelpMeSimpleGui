@@ -17,7 +17,7 @@
         <uses-library android:name="com.google.android.maps" />
 
         <activity
-            android:name=".gui.Maps"
+            android:name=".gui.HelperMapActivity"
             android:label="@string/title_activity_maps"
             android:screenOrientation="portrait"
             android:theme="@android:style/Theme.NoTitleBar" >
@@ -26,11 +26,6 @@
             android:name=".gui.LoginActivity"
             android:label="@string/app_name"
             android:screenOrientation="portrait" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
         </activity>
         <activity
             android:name=".gui.SeekerActivity"
@@ -47,9 +42,19 @@
             android:label="@string/title_activity_helper_coming"
             android:screenOrientation="portrait" >
         </activity>
+        <activity 
+            android:name=".gui.SwitcherActivity"
+            android:label="@string/app_name"
+            android:screenOrientation="portrait">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
 
         <service
-            android:name=".MyService"
+            android:name=".rabbitMQ.RabbitMQService"
             android:enabled="true"
             android:exported="true"
             android:process=":remote" >

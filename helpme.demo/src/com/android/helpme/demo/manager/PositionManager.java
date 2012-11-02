@@ -9,7 +9,7 @@ import com.android.helpme.demo.manager.interfaces.PositionManagerInterface;
 import com.android.helpme.demo.messagesystem.AbstractMessageSystem;
 import com.android.helpme.demo.messagesystem.AbstractMessageSystemInterface;
 import com.android.helpme.demo.messagesystem.InAppMessage;
-import com.android.helpme.demo.messagesystem.inAppMessageType;
+import com.android.helpme.demo.messagesystem.InAppMessageType;
 import com.android.helpme.demo.utils.User;
 import com.android.helpme.demo.utils.position.Position;
 import com.android.helpme.demo.utils.position.PositionInterface;
@@ -117,7 +117,7 @@ public class PositionManager extends AbstractMessageSystem implements PositionMa
 		Position wayPointData = new Position(location);
 		Log.i(getLogTag(), "new Location arrived");
 
-		fireMessageFromManager(wayPointData, inAppMessageType.LOCATION);
+		fireMessageFromManager(wayPointData, InAppMessageType.LOCATION);
 	}
 
 	@Override
@@ -157,7 +157,7 @@ public class PositionManager extends AbstractMessageSystem implements PositionMa
 
 				lastLocation = locationManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
 				if (lastLocation != null && SimpleSelectionStrategy.isPositionRelevant(lastLocation)) {
-					fireMessageFromManager(new Position(lastLocation), inAppMessageType.LOCATION);
+					fireMessageFromManager(new Position(lastLocation), InAppMessageType.LOCATION);
 				} 
 
 
@@ -192,13 +192,13 @@ public class PositionManager extends AbstractMessageSystem implements PositionMa
 				if (!started) {
 					return;
 				}
-				if (Looper.myLooper() == null) {
-					Looper.prepare();
-				}
-				;
+//				if (Looper.myLooper() == null) {
+//					Looper.prepare();
+//				}
+//				
 
 				locationManager.removeUpdates(manager);
-				Looper.myLooper().quit();
+//				Looper.myLooper().quit();
 				started = false;
 			}
 		};

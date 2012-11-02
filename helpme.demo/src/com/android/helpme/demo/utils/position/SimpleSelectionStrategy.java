@@ -72,7 +72,7 @@ public abstract class SimpleSelectionStrategy {
 	}
 	
 	private static boolean hasMovedUnder100m(Position lastPosition, Position currentPosition) {
-		return Math.abs(lastPosition.calculateSphereDistance(currentPosition)) < 100;
+		return Math.abs(lastPosition.calculateSphereDistance(currentPosition)) < 10;
 	}
 	
 	private static boolean hasTurnedUnder10Degree(Position lastPosition, Position currentPosition) {

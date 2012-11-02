@@ -6,7 +6,6 @@ import javax.crypto.spec.PSource;
 
 import org.json.simple.JSONObject;
 
-import com.android.helpme.demo.MyService;
 import com.android.helpme.demo.R;
 import com.android.helpme.demo.R.id;
 import com.android.helpme.demo.R.layout;
@@ -16,6 +15,7 @@ import com.android.helpme.demo.manager.PositionManager;
 import com.android.helpme.demo.manager.RabbitMQManager;
 import com.android.helpme.demo.manager.UserManager;
 import com.android.helpme.demo.manager.interfaces.RabbitMQManagerInterface.ExchangeType;
+import com.android.helpme.demo.utils.Task;
 import com.android.helpme.demo.utils.ThreadPool;
 import com.android.helpme.demo.utils.User;
 import com.android.helpme.demo.utils.UserInterface;
@@ -28,6 +28,8 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -99,26 +101,45 @@ public class HelperActivity extends Activity implements DrawManager {
 				});
 
 				dlgAlert.create().show();
-
-
 			}
 		};
 	}
-
-
+	
 	@Override
 	public void drawThis(Object object) {
 		if (object instanceof User) {
 			if (!data.contains(((User) object).getId())) {
 				handler.post(addUser((User)object, this));
 			}
-			
+		}
+	}
+	
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		getMenuInflater().inflate(R.menu.activity_main, menu);
+		return true;
+	}
+	
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch (item.getItemId()) {
+		case R.id.menu_relog:
+			ThreadPool.runTask(UserManager.getInstance().deleteUserChoice(getApplicationContext()));
+			Intent intent = new Intent(getBaseContext(), SwitcherActivity.class);
+			startActivity(intent);
+			return true;
+		default:
+			return super.onOptionsItemSelected(item);
 		}
 	}
 
 	public void showPosition(UserInterface user) {
 		HistoryManager.getInstance().startNewTask(user);
-		Intent myIntent = new Intent(this.getApplicationContext(), Maps.class);
+		Intent myIntent = new Intent(this.getApplicationContext(), HelperMapActivity.class);
 		startActivity(myIntent);
+	}
+	
+	@Override
+	public void onBackPressed() {
 	}
 }
