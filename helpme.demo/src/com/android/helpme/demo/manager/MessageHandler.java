@@ -128,7 +128,10 @@ public abstract class MessageHandler extends AbstractMessageSystem implements Me
 			run(rabbitMQManagerInterface.showNotification(incomingUser));
 		}
 
-		historyManagerInterface.getTask().updatePosition(incomingUser);
+		if (historyManagerInterface.getTask() != null) {
+			historyManagerInterface.getTask().updatePosition(incomingUser);
+		}
+		
 		if (getDrawManager(DRAWMANAGER_TYPE.MAP) != null) {
 			
 			if (historyManagerInterface.getTask().isUserInShortDistance()) {
