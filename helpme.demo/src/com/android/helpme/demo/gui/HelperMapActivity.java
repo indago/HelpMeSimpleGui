@@ -11,6 +11,7 @@ import com.android.helpme.demo.R;
 import com.android.helpme.demo.R.drawable;
 import com.android.helpme.demo.R.id;
 import com.android.helpme.demo.R.layout;
+import com.android.helpme.demo.manager.HistoryManager;
 import com.android.helpme.demo.manager.MessageOrchestrator;
 import com.android.helpme.demo.manager.UserManager;
 import com.android.helpme.demo.utils.Task;
@@ -28,6 +29,7 @@ import com.google.android.maps.OverlayItem;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.inputmethodservice.Keyboard.Key;
 import android.os.Bundle;
@@ -188,12 +190,17 @@ public class HelperMapActivity extends MapActivity implements DrawManager{
 			@Override
 			public void run() {
 				AlertDialog.Builder dlgAlert = new AlertDialog.Builder(context);
-				dlgAlert.setTitle(getString(R.string.in_range_title));
-				dlgAlert.setMessage(getString(R.string.in_range_text));
+				dlgAlert.setTitle(getString(R.string.seeker_in_range_title));
+				dlgAlert.setMessage(getString(R.string.seeker_in_range_text));
 				dlgAlert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
 
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
+						Intent intent = new Intent(context, HelperActivity.class);
+						HistoryManager.getInstance().stopTask();
+						MessageOrchestrator.getInstance().removeDrawManager(DRAWMANAGER_TYPE.MAP);
+						startActivity(intent);
+						finish();
 					}
 
 				});
@@ -201,5 +208,14 @@ public class HelperMapActivity extends MapActivity implements DrawManager{
 				dialog.show();
 			}
 		};
+	}
+	
+	@Override
+	public void onBackPressed() {
+		Intent intent = new Intent(this, HelperActivity.class);
+		HistoryManager.getInstance().stopTask();
+		MessageOrchestrator.getInstance().removeDrawManager(DRAWMANAGER_TYPE.MAP);
+		startActivity(intent);
+		finish();
 	}
 }

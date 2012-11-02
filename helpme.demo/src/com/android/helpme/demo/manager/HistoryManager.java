@@ -130,9 +130,9 @@ public class HistoryManager extends AbstractMessageSystem implements HistoryMana
 
 	@Override
 	public void startNewTask(UserInterface user) {
-		currentTask = new Task();
-		currentTask.addObserver(this);
-		currentTask.startTask(user);
+			currentTask = new Task();
+			currentTask.addObserver(this);
+			currentTask.startTask(user);
 	}
 
 	@Override

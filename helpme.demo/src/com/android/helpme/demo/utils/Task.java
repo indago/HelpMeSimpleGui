@@ -3,6 +3,7 @@
  */
 package com.android.helpme.demo.utils;
 
+import java.util.Date;
 import java.util.Observable;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -33,6 +34,7 @@ public class Task extends Observable{
 	private boolean answered;
 	private String exchangeName;
 	private Position startPosition;
+	private long startTime;
 	private String state;
 	UserManagerInterface userManagerInterface;
 	RabbitMQManagerInterface rabbitMQManagerInterface;
@@ -58,8 +60,9 @@ public class Task extends Observable{
 		run(positionManagerInterface.startLocationTracking());
 		exchangeName = user.getId();
 		startPosition = user.getPosition();
+		startTime = user.getPosition().getMeasureDateTime();
 		run(rabbitMQManagerInterface.subscribeToChannel(exchangeName, ExchangeType.fanout));
-		answered = true;
+		setUser(user);
 		state = RUNNING;
 	}
 	
@@ -69,6 +72,7 @@ public class Task extends Observable{
 	public void startTask() {
 		run(positionManagerInterface.startLocationTracking());
 		exchangeName = userManagerInterface.getThisUser().getId();
+		startTime = System.currentTimeMillis();
 		run(rabbitMQManagerInterface.subscribeToChannel(exchangeName, ExchangeType.fanout));
 		state = RUNNING;
 		timer = new Timer();
@@ -92,6 +96,10 @@ public class Task extends Observable{
 		return answered;
 	}
 	
+	public UserInterface getUser() {
+		return user;
+	}
+
 	private void run(Runnable runnable){
 		ThreadPool.runTask(runnable);
 	}
@@ -158,7 +166,7 @@ public class Task extends Observable{
 		run(rabbitMQManagerInterface.endSubscribtionToChannel(exchangeName));
 		JSONObject jsonObject = new JSONObject();
 		jsonObject.put(ID, user.getId());
-		jsonObject.put(START_TIME, startPosition.getMeasureDateTime());
+		jsonObject.put(START_TIME, startTime);
 		jsonObject.put(STOP_TIME, user.getPosition().getMeasureDateTime());
 		jsonObject.put(STATE, state);
 		return jsonObject;

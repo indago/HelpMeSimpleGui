@@ -7,16 +7,25 @@ import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 
 import com.android.helpme.demo.R;
+import com.android.helpme.demo.gui.DrawManager.DRAWMANAGER_TYPE;
 import com.android.helpme.demo.manager.HistoryManager;
 import com.android.helpme.demo.manager.MessageOrchestrator;
+import com.android.helpme.demo.manager.PositionManager;
 import com.android.helpme.demo.manager.UserManager;
+import com.android.helpme.demo.utils.Task;
 import com.android.helpme.demo.utils.User;
 import com.android.helpme.demo.utils.UserInterface;
 import com.android.helpme.demo.utils.position.Position;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
+import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 /**
@@ -56,6 +65,34 @@ public class HelperCommingActivity extends Activity implements DrawManager {
 		};
 		
 	}
+	
+	private Runnable helperIsNextToYou(final UserInterface userInterface, final Context context) {
+		return new Runnable() {
+			
+			@Override
+			public void run() {
+				AlertDialog.Builder dlgAlert = new AlertDialog.Builder(context);
+				dlgAlert.setTitle(getString(R.string.helper_in_range_title));
+				String text = getString(R.string.helper_in_range_text);
+				text.replace("[name]", userInterface.getName());
+				dlgAlert.setMessage(text);
+				dlgAlert.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						Intent intent = new Intent(context, SeekerActivity.class);
+						HistoryManager.getInstance().stopTask();
+						MessageOrchestrator.getInstance().removeDrawManager(DRAWMANAGER_TYPE.HELPERCOMMING);
+						startActivity(intent);
+						finish();
+					}
+				});
+
+				dlgAlert.create().show();
+				
+			}
+		};
+	}
 
 	/* (non-Javadoc)
 	 * @see com.android.helpme.demo.gui.DrawManager#drawThis(java.lang.Object)
@@ -65,6 +102,19 @@ public class HelperCommingActivity extends Activity implements DrawManager {
 		if (object instanceof UserInterface) {
 			handler.post(setText());
 		}
+		else if (object instanceof Task) {
+			Task task = (Task) object;
+			handler.post(helperIsNextToYou(task.getUser(), this));
+		}
+	}
+	
+	@Override
+	public void onBackPressed() {
+		Intent intent = new Intent(this, SeekerActivity.class);
+		HistoryManager.getInstance().stopTask();
+		MessageOrchestrator.getInstance().removeDrawManager(DRAWMANAGER_TYPE.HELPERCOMMING);
+		startActivity(intent);
+		finish();
 	}
 
 }

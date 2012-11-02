@@ -137,6 +137,7 @@ public class SeekerActivity extends Activity implements DrawManager{
 //			progressBar.setVisibility(ProgressBar.INVISIBLE);
 			Intent myIntent = new Intent(this.getApplicationContext(), HelperCommingActivity.class);
 			startActivity(myIntent);
+			finish();
 		}
 		if (object instanceof Task) {
 			uihandler.post(noUserFound(this));

@@ -154,7 +154,13 @@ public abstract class MessageHandler extends AbstractMessageSystem implements Me
 		historyManagerInterface.getTask().updatePosition(incomingUser);
 
 		if (getDrawManager(DRAWMANAGER_TYPE.HELPERCOMMING) != null) {
-			getDrawManager(DRAWMANAGER_TYPE.HELPERCOMMING).drawThis(incomingUser);
+			if (historyManagerInterface.getTask().isUserInShortDistance()) {
+				getDrawManager(DRAWMANAGER_TYPE.HELPERCOMMING).drawThis(historyManagerInterface.getTask());
+			}
+			else {
+				getDrawManager(DRAWMANAGER_TYPE.HELPERCOMMING).drawThis(incomingUser);
+			}
+			
 		} else {
 
 			getDrawManager(DRAWMANAGER_TYPE.SEEKER).drawThis(incomingUser);

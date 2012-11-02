@@ -17,8 +17,10 @@
     <string name="this_person">This Person is looking for help: </string>
     <string name="title_activity_helper_coming">Stay put a Helper is coming for you</string>
     <string name="distance_to_helper">Distance to Helper is: </string>
-    <string name="in_range_title">Help Seeker is in Range</string>
-    <string name="in_range_text">The Help Seeker you are looking for is in Range to you, you should be able to spot him/her</string>
+    <string name="helper_in_range_title">Helper is in Range</string>
+    <string name="helper_in_range_text">The Helper [name] will arrive at your place shortly and will help you</string>
+    <string name="seeker_in_range_title">Help Seeker is in Range</string>
+    <string name="seeker_in_range_text">The Help Seeker you are looking for is in Range to you, you should be able to spot him/her</string>
     <string name="somebody_wants_help_title">New Help Request</string>
     <string name="somebody_wants_help_text">Do you want to help [name]?</string>
     <string name="no_helper_title">No Helper has been found</string>
