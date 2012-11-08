@@ -1,21 +1,21 @@
-package com.android.helpme.demo.gui;
+package com.android.helpme.gui;
 
 import java.util.ArrayList;
 
-import com.android.helpme.demo.R;
+import com.android.helpme.R;
 import com.android.helpme.demo.R.id;
 import com.android.helpme.demo.R.layout;
-import com.android.helpme.demo.gui.DrawManager.DRAWMANAGER_TYPE;
+import com.android.helpme.demo.interfaces.DrawManagerInterface;
+import com.android.helpme.demo.interfaces.UserInterface;
 import com.android.helpme.demo.manager.HistoryManager;
 import com.android.helpme.demo.manager.MessageOrchestrator;
 import com.android.helpme.demo.manager.PositionManager;
 import com.android.helpme.demo.manager.RabbitMQManager;
 import com.android.helpme.demo.manager.UserManager;
-import com.android.helpme.demo.manager.interfaces.MessageOrchestratorInterface;
+import com.android.helpme.demo.interfaces.MessageOrchestratorInterface;
 import com.android.helpme.demo.rabbitMQ.RabbitMQService;
 import com.android.helpme.demo.utils.ThreadPool;
 import com.android.helpme.demo.utils.User;
-import com.android.helpme.demo.utils.UserInterface;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -31,7 +31,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.AdapterView.OnItemClickListener;
 
-public class LoginActivity extends Activity implements DrawManager{
+public class LoginActivity extends Activity implements DrawManagerInterface{
 	private ListView listView;
 	public static ArrayAdapter<String> adapter;
 	private ArrayList<String> data;

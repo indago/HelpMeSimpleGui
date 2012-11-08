@@ -1,32 +1,15 @@
-package com.android.helpme.demo.gui;
+package com.android.helpme.gui;
 
 
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.util.Properties;
-import java.util.Set;
-
-import org.json.simple.JSONObject;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
-
-import com.android.helpme.demo.R;
-import com.android.helpme.demo.R.id;
-import com.android.helpme.demo.R.layout;
-import com.android.helpme.demo.gui.DrawManager.DRAWMANAGER_TYPE;
+import com.android.helpme.R;
+import com.android.helpme.demo.interfaces.DrawManagerInterface;
+import com.android.helpme.demo.interfaces.MessageOrchestratorInterface;
 import com.android.helpme.demo.manager.HistoryManager;
 import com.android.helpme.demo.manager.MessageOrchestrator;
-import com.android.helpme.demo.manager.PositionManager;
-import com.android.helpme.demo.manager.RabbitMQManager;
 import com.android.helpme.demo.manager.UserManager;
-import com.android.helpme.demo.manager.interfaces.HistoryManagerInterface;
-import com.android.helpme.demo.manager.interfaces.MessageOrchestratorInterface;
 import com.android.helpme.demo.utils.Task;
 import com.android.helpme.demo.utils.ThreadPool;
 import com.android.helpme.demo.utils.User;
-import com.android.helpme.demo.utils.UserInterface;
 
 import android.os.Bundle;
 import android.os.Handler;
@@ -35,17 +18,13 @@ import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.res.AssetManager;
-import android.content.res.Resources;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 
-public class SeekerActivity extends Activity implements DrawManager{
+public class SeekerActivity extends Activity implements DrawManagerInterface{
 	private static final String LOG_TAG = "MainActivity"; 
 	
 	private Button buttonHelpMe;

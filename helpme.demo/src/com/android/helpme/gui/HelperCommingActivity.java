@@ -1,20 +1,20 @@
 /**
  * 
  */
-package com.android.helpme.demo.gui;
+package com.android.helpme.gui;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 
-import com.android.helpme.demo.R;
-import com.android.helpme.demo.gui.DrawManager.DRAWMANAGER_TYPE;
+import com.android.helpme.R;
+import com.android.helpme.demo.interfaces.DrawManagerInterface;
+import com.android.helpme.demo.interfaces.UserInterface;
 import com.android.helpme.demo.manager.HistoryManager;
 import com.android.helpme.demo.manager.MessageOrchestrator;
 import com.android.helpme.demo.manager.PositionManager;
 import com.android.helpme.demo.manager.UserManager;
 import com.android.helpme.demo.utils.Task;
 import com.android.helpme.demo.utils.User;
-import com.android.helpme.demo.utils.UserInterface;
 import com.android.helpme.demo.utils.position.Position;
 
 import android.app.Activity;
@@ -32,7 +32,7 @@ import android.widget.TextView;
  * @author Andreas Wieland
  *
  */
-public class HelperCommingActivity extends Activity implements DrawManager {
+public class HelperCommingActivity extends Activity implements DrawManagerInterface {
 	private TextView textView;
 	private Handler handler;
 	private DecimalFormat decimalFormat;
@@ -112,6 +112,7 @@ public class HelperCommingActivity extends Activity implements DrawManager {
 	public void onBackPressed() {
 		Intent intent = new Intent(this, SeekerActivity.class);
 		HistoryManager.getInstance().stopTask();
+		HistoryManager.getInstance().saveHistory(getApplicationContext());
 		MessageOrchestrator.getInstance().removeDrawManager(DRAWMANAGER_TYPE.HELPERCOMMING);
 		startActivity(intent);
 		finish();

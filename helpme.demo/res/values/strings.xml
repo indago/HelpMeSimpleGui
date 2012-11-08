@@ -2,6 +2,7 @@
 
     <string name="app_name">IndagoDemo</string>
     <string name="menu_relog">relog</string>
+    <string name="menu_history">History</string>
     <string name="title_activity_seeker">Are you looking for Help?</string>
     <string name="waitingtext">waiting for Help requests</string>
     <string name="waitingtitle">Waiting...</string>
@@ -25,5 +26,7 @@
     <string name="somebody_wants_help_text">Do you want to help [name]?</string>
     <string name="no_helper_title">No Helper has been found</string>
     <string name="no_helper_text">We are sorry but no helping hand could be located near to your position!</string>
+    <string name="history_snippet_text">sometext sometext sometext</string>
+    <string name="title_activity_history">History</string>
 
 </resources>

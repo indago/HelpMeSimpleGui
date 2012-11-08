@@ -1,9 +1,10 @@
 /**
  * 
  */
-package com.android.helpme.demo.gui;
+package com.android.helpme.gui;
 
-import com.android.helpme.demo.gui.DrawManager.DRAWMANAGER_TYPE;
+import com.android.helpme.R;
+import com.android.helpme.demo.interfaces.DrawManagerInterface;
 import com.android.helpme.demo.manager.HistoryManager;
 import com.android.helpme.demo.manager.MessageOrchestrator;
 import com.android.helpme.demo.manager.PositionManager;
@@ -22,13 +23,12 @@ import android.os.Handler;
  * @author Andreas Wieland
  *
  */
-public class SwitcherActivity extends Activity implements DrawManager{
+public class SwitcherActivity extends Activity implements DrawManagerInterface{
 	private Handler handler;
 	private MessageOrchestrator orchestrator;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		// TODO Auto-generated method stub
 		super.onCreate(savedInstanceState);
 		handler = new Handler();
 		
@@ -45,7 +45,7 @@ public class SwitcherActivity extends Activity implements DrawManager{
 		orchestrator.listenToMessageSystem(UserManager.getInstance());
 		orchestrator.listenToMessageSystem(HistoryManager.getInstance());
 
-		ThreadPool.runTask(RabbitMQManager.getInstance().bindToService(getApplicationContext()));
+		ThreadPool.runTask(RabbitMQManager.getInstance().bindToService(this));
 		ThreadPool.runTask(UserManager.getInstance().readUserChoice(getApplicationContext()));
 	}
 	

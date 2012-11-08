@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.android.helpme.demo.gui;
+package com.android.helpme.gui;
 
 import java.util.ArrayList;
 
@@ -12,6 +12,7 @@ import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.provider.CalendarContract.Colors;
 
+import com.android.helpme.R;
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.OverlayItem;
 
@@ -47,6 +48,10 @@ public class MyItemnizedOverlay extends ItemizedOverlay<OverlayItem> {
 	@Override
 	public int size() {
 		return items.size();
+	}
+	
+	public ArrayList<OverlayItem> getItems() {
+		return items;
 	}
 
 	@Override

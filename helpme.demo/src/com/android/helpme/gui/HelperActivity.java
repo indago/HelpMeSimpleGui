@@ -1,24 +1,15 @@
-package com.android.helpme.demo.gui;
+package com.android.helpme.gui;
 
 import java.util.ArrayList;
 
-import javax.crypto.spec.PSource;
-
-import org.json.simple.JSONObject;
-
-import com.android.helpme.demo.R;
-import com.android.helpme.demo.R.id;
-import com.android.helpme.demo.R.layout;
+import com.android.helpme.R;
+import com.android.helpme.demo.interfaces.DrawManagerInterface;
+import com.android.helpme.demo.interfaces.UserInterface;
 import com.android.helpme.demo.manager.HistoryManager;
 import com.android.helpme.demo.manager.MessageOrchestrator;
-import com.android.helpme.demo.manager.PositionManager;
-import com.android.helpme.demo.manager.RabbitMQManager;
 import com.android.helpme.demo.manager.UserManager;
-import com.android.helpme.demo.manager.interfaces.RabbitMQManagerInterface.ExchangeType;
-import com.android.helpme.demo.utils.Task;
 import com.android.helpme.demo.utils.ThreadPool;
 import com.android.helpme.demo.utils.User;
-import com.android.helpme.demo.utils.UserInterface;
 
 
 import android.app.Activity;
@@ -34,16 +25,15 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ListView;
 /**
  * 
  * @author Andreas Wieland
  *
  */
-public class HelperActivity extends Activity implements DrawManager {
+public class HelperActivity extends Activity implements DrawManagerInterface {
 	private ListView listView;
-	private ArrayAdapter<UserInterface> adapter;
+	private ArrayAdapter<com.android.helpme.demo.interfaces.UserInterface> adapter;
 	private ArrayList<String> data;
 	private Handler handler;
 
@@ -104,7 +94,7 @@ public class HelperActivity extends Activity implements DrawManager {
 			}
 		};
 	}
-	
+
 	@Override
 	public void drawThis(Object object) {
 		if (object instanceof User) {
@@ -113,24 +103,29 @@ public class HelperActivity extends Activity implements DrawManager {
 			}
 		}
 	}
-	
+
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.activity_main, menu);
 		return true;
 	}
-	
+
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
+		Intent intent;
 		switch (item.getItemId()) {
 		case R.id.menu_relog:
 			ThreadPool.runTask(UserManager.getInstance().deleteUserChoice(getApplicationContext()));
-			Intent intent = new Intent(getBaseContext(), SwitcherActivity.class);
-			startActivity(intent);
-			return true;
+			intent = new Intent(getBaseContext(), SwitcherActivity.class);
+			break;
+		case R.id.menu_history:
+			intent = new Intent(getBaseContext(), HistoryActivity.class);
+			break;
 		default:
 			return super.onOptionsItemSelected(item);
 		}
+		startActivity(intent);
+		return true;
 	}
 
 	public void showPosition(UserInterface user) {
@@ -138,7 +133,7 @@ public class HelperActivity extends Activity implements DrawManager {
 		Intent myIntent = new Intent(this.getApplicationContext(), HelperMapActivity.class);
 		startActivity(myIntent);
 	}
-	
+
 	@Override
 	public void onBackPressed() {
 	}

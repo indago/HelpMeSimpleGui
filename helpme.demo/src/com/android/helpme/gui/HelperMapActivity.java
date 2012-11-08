@@ -1,23 +1,24 @@
 /**
  * 
  */
-package com.android.helpme.demo.gui;
+package com.android.helpme.gui;
 
 import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
 
-import com.android.helpme.demo.R;
+import com.android.helpme.R;
 import com.android.helpme.demo.R.drawable;
 import com.android.helpme.demo.R.id;
 import com.android.helpme.demo.R.layout;
+import com.android.helpme.demo.interfaces.DrawManagerInterface;
+import com.android.helpme.demo.interfaces.UserInterface;
 import com.android.helpme.demo.manager.HistoryManager;
 import com.android.helpme.demo.manager.MessageOrchestrator;
 import com.android.helpme.demo.manager.UserManager;
 import com.android.helpme.demo.utils.Task;
 import com.android.helpme.demo.utils.ThreadPool;
 import com.android.helpme.demo.utils.User;
-import com.android.helpme.demo.utils.UserInterface;
 import com.google.android.maps.GeoPoint;
 import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.MapActivity;
@@ -41,7 +42,7 @@ import android.util.Log;
  * @author Andreas Wieland
  *
  */
-public class HelperMapActivity extends MapActivity implements DrawManager{
+public class HelperMapActivity extends MapActivity implements DrawManagerInterface{
 	private List<Overlay> mapOverlays;
 	private MyItemnizedOverlay overlay;
 	private MapController mapController;
@@ -198,6 +199,7 @@ public class HelperMapActivity extends MapActivity implements DrawManager{
 					public void onClick(DialogInterface dialog, int which) {
 						Intent intent = new Intent(context, HelperActivity.class);
 						HistoryManager.getInstance().stopTask();
+						HistoryManager.getInstance().saveHistory(getApplicationContext());
 						MessageOrchestrator.getInstance().removeDrawManager(DRAWMANAGER_TYPE.MAP);
 						startActivity(intent);
 						finish();
@@ -205,7 +207,11 @@ public class HelperMapActivity extends MapActivity implements DrawManager{
 
 				});
 				AlertDialog dialog = dlgAlert.create();
+				try{
 				dialog.show();
+				}catch(Exception exception){
+					Log.e(HelperMapActivity.class.getSimpleName(), exception.toString());
+				}
 			}
 		};
 	}
@@ -214,6 +220,7 @@ public class HelperMapActivity extends MapActivity implements DrawManager{
 	public void onBackPressed() {
 		Intent intent = new Intent(this, HelperActivity.class);
 		HistoryManager.getInstance().stopTask();
+		HistoryManager.getInstance().saveHistory(getApplicationContext());
 		MessageOrchestrator.getInstance().removeDrawManager(DRAWMANAGER_TYPE.MAP);
 		startActivity(intent);
 		finish();
