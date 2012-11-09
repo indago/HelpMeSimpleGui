@@ -1,7 +1,7 @@
 /**
  * 
  */
-package com.android.helpme.gui;
+package com.who.is.your.daddy;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -9,7 +9,6 @@ import java.util.List;
 
 import org.json.simple.JSONObject;
 
-import com.android.helpme.R;
 import com.android.helpme.demo.interfaces.DrawManagerInterface;
 import com.android.helpme.demo.interfaces.UserInterface;
 import com.android.helpme.demo.interfaces.DrawManagerInterface.DRAWMANAGER_TYPE;
@@ -67,7 +66,7 @@ public class HistoryActivity extends MapActivity implements DrawManagerInterface
 		mapOverlays.add(overlay);
 
 		MessageOrchestrator.getInstance().addDrawManager(DRAWMANAGER_TYPE.HISTORY, this);
-		handler.post(HistoryManager.getInstance().loadHistory(getApplicationContext()));
+		handler.post(HistoryManager.getInstance().getHistory());
 	}
 
 	private Runnable addMarker(final ArrayList<JSONObject> jsonObjects){
@@ -90,7 +89,6 @@ public class HistoryActivity extends MapActivity implements DrawManagerInterface
 	}
 
 	private void setZoomLevel(){
-		
 		if (overlay.size() > 1) {
 			int minLatitude = Integer.MAX_VALUE;
 			int maxLatitude = Integer.MIN_VALUE;

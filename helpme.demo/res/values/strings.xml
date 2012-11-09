@@ -4,16 +4,12 @@
     <string name="menu_relog">relog</string>
     <string name="menu_history">History</string>
     <string name="title_activity_seeker">Are you looking for Help?</string>
-    <string name="waitingtext">waiting for Help requests</string>
-    <string name="waitingtitle">Waiting...</string>
     <string name="helpButton">help Me</string>
     <string name="title_activity_helper">List of Help requests</string>
     <string name="title_activity_login">Please Login</string>
     <string name="Helper">Helfender</string>
     <string name="LostPerson">Hilfesuchender</string>
     <string name="title_activity_maps">Maps</string>
-    <string name="local_service_started">service started</string>
-    <string name="local_service_stopped">service stopped</string>
     <string name="new_help_request">New Help request</string>
     <string name="this_person">This Person is looking for help: </string>
     <string name="title_activity_helper_coming">Stay put a Helper is coming for you</string>

@@ -1,19 +1,18 @@
 /**
  * 
  */
-package com.android.helpme.gui;
+package com.who.is.your.daddy;
 
 import java.util.ArrayList;
 
-import android.R.color;
 import android.app.AlertDialog;
 import android.content.Context;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
-import android.provider.CalendarContract.Colors;
+import android.view.MotionEvent;
 
-import com.android.helpme.R;
+import com.google.android.maps.GeoPoint;
 import com.google.android.maps.ItemizedOverlay;
+import com.google.android.maps.MapView;
 import com.google.android.maps.OverlayItem;
 
 /**
@@ -27,12 +26,14 @@ public class MyItemnizedOverlay extends ItemizedOverlay<OverlayItem> {
 	public MyItemnizedOverlay(Drawable drawable) {
 		super(boundCenterBottom(drawable));
 		items = new ArrayList<OverlayItem>();
+		populate();
 	}
 
 	public MyItemnizedOverlay(Drawable defaultMarker, Context context) {
 		super(boundCenterBottom(defaultMarker));
 		this.context = context;
 		items = new ArrayList<OverlayItem>();
+		populate();
 	}
 
 	public void addOverlay(OverlayItem overlay) {
@@ -53,15 +54,23 @@ public class MyItemnizedOverlay extends ItemizedOverlay<OverlayItem> {
 	public ArrayList<OverlayItem> getItems() {
 		return items;
 	}
+	
+	@Override
+	public boolean onTap(GeoPoint arg0, MapView arg1) {
+		return false;
+	}
 
 	@Override
 	protected boolean onTap(int index) {
 		OverlayItem item = items.get(index);
-		AlertDialog.Builder dialog = new AlertDialog.Builder(context);
-		dialog.setTitle(item.getTitle());
-		dialog.setMessage(item.getSnippet());
-		dialog.show();
-		return true;
+		if (item != null) {
+			AlertDialog.Builder dialog = new AlertDialog.Builder(context);
+			dialog.setTitle(item.getTitle());
+			dialog.setMessage(item.getSnippet());
+			dialog.show();
+			return true;
+		}
+		return false;
 	}
 
 	public void removeItem(OverlayItem item) {

@@ -1,19 +1,11 @@
-package com.android.helpme.gui;
+package com.who.is.your.daddy;
 
 import java.util.ArrayList;
 
-import com.android.helpme.R;
-import com.android.helpme.demo.R.id;
-import com.android.helpme.demo.R.layout;
 import com.android.helpme.demo.interfaces.DrawManagerInterface;
 import com.android.helpme.demo.interfaces.UserInterface;
-import com.android.helpme.demo.manager.HistoryManager;
 import com.android.helpme.demo.manager.MessageOrchestrator;
-import com.android.helpme.demo.manager.PositionManager;
-import com.android.helpme.demo.manager.RabbitMQManager;
 import com.android.helpme.demo.manager.UserManager;
-import com.android.helpme.demo.interfaces.MessageOrchestratorInterface;
-import com.android.helpme.demo.rabbitMQ.RabbitMQService;
 import com.android.helpme.demo.utils.ThreadPool;
 import com.android.helpme.demo.utils.User;
 
@@ -24,7 +16,6 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
-import android.provider.Settings.Secure;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;

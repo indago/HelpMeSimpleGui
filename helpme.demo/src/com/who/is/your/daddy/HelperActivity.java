@@ -1,8 +1,7 @@
-package com.android.helpme.gui;
+package com.who.is.your.daddy;
 
 import java.util.ArrayList;
 
-import com.android.helpme.R;
 import com.android.helpme.demo.interfaces.DrawManagerInterface;
 import com.android.helpme.demo.interfaces.UserInterface;
 import com.android.helpme.demo.manager.HistoryManager;
@@ -94,6 +93,21 @@ public class HelperActivity extends Activity implements DrawManagerInterface {
 			}
 		};
 	}
+	
+	private Runnable addUser(final ArrayList<User> users) {
+		return new Runnable() {
+			
+			@Override
+			public void run() {
+				adapter.clear();
+				adapter.addAll(users);
+				data.clear();
+				for (User user : users) {
+					data.add(user.getId());
+				}
+			}
+		};
+	}
 
 	@Override
 	public void drawThis(Object object) {
@@ -101,6 +115,8 @@ public class HelperActivity extends Activity implements DrawManagerInterface {
 			if (!data.contains(((User) object).getId())) {
 				handler.post(addUser((User)object, this));
 			}
+		}else if (object instanceof ArrayList<?>) {
+			handler.post(addUser((ArrayList<User>) object));
 		}
 	}
 

@@ -1,9 +1,8 @@
 /**
  * 
  */
-package com.android.helpme.gui;
+package com.who.is.your.daddy;
 
-import com.android.helpme.R;
 import com.android.helpme.demo.interfaces.DrawManagerInterface;
 import com.android.helpme.demo.manager.HistoryManager;
 import com.android.helpme.demo.manager.MessageOrchestrator;

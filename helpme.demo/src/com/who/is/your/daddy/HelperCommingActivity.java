@@ -1,12 +1,11 @@
 /**
  * 
  */
-package com.android.helpme.gui;
+package com.who.is.your.daddy;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
 
-import com.android.helpme.R;
 import com.android.helpme.demo.interfaces.DrawManagerInterface;
 import com.android.helpme.demo.interfaces.UserInterface;
 import com.android.helpme.demo.manager.HistoryManager;

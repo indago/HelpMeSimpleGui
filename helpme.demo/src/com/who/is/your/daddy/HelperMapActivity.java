@@ -1,26 +1,18 @@
 /**
  * 
  */
-package com.android.helpme.gui;
+package com.who.is.your.daddy;
 
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
-
-import com.android.helpme.R;
-import com.android.helpme.demo.R.drawable;
-import com.android.helpme.demo.R.id;
-import com.android.helpme.demo.R.layout;
 import com.android.helpme.demo.interfaces.DrawManagerInterface;
 import com.android.helpme.demo.interfaces.UserInterface;
 import com.android.helpme.demo.manager.HistoryManager;
 import com.android.helpme.demo.manager.MessageOrchestrator;
 import com.android.helpme.demo.manager.UserManager;
 import com.android.helpme.demo.utils.Task;
-import com.android.helpme.demo.utils.ThreadPool;
 import com.android.helpme.demo.utils.User;
 import com.google.android.maps.GeoPoint;
-import com.google.android.maps.ItemizedOverlay;
 import com.google.android.maps.MapActivity;
 import com.google.android.maps.MapController;
 import com.google.android.maps.MapView;
@@ -32,10 +24,8 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
-import android.inputmethodservice.Keyboard.Key;
 import android.os.Bundle;
 import android.os.Handler;
-import android.os.Message;
 import android.util.Log;
 
 /**
@@ -199,7 +189,7 @@ public class HelperMapActivity extends MapActivity implements DrawManagerInterfa
 					public void onClick(DialogInterface dialog, int which) {
 						Intent intent = new Intent(context, HelperActivity.class);
 						HistoryManager.getInstance().stopTask();
-						HistoryManager.getInstance().saveHistory(getApplicationContext());
+						handler.post(HistoryManager.getInstance().saveHistory(getApplicationContext()));
 						MessageOrchestrator.getInstance().removeDrawManager(DRAWMANAGER_TYPE.MAP);
 						startActivity(intent);
 						finish();
