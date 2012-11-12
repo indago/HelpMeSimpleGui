@@ -3,13 +3,17 @@
  */
 package com.who.is.your.daddy;
 
+import java.util.GregorianCalendar;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+
 import com.android.helpme.demo.interfaces.DrawManagerInterface;
 import com.android.helpme.demo.interfaces.UserInterface;
 import com.android.helpme.demo.manager.HistoryManager;
 import com.android.helpme.demo.manager.MessageOrchestrator;
 import com.android.helpme.demo.manager.UserManager;
+import com.android.helpme.demo.overlay.MapItemnizedOverlay;
 import com.android.helpme.demo.utils.Task;
 import com.android.helpme.demo.utils.User;
 import com.google.android.maps.GeoPoint;
@@ -34,13 +38,13 @@ import android.util.Log;
  */
 public class HelperMapActivity extends MapActivity implements DrawManagerInterface{
 	private List<Overlay> mapOverlays;
-	private MyItemnizedOverlay overlay;
+	private MapItemnizedOverlay overlay;
 	private MapController mapController;
 	private Handler handler;
 	private HashMap<String, OverlayItem> map;
-	private Drawable green_marker;
-	private Drawable red_marker;
-	private Drawable blue_marker;
+	private Drawable pin_green;
+	private Drawable pin_orange;
+	private HelperMapActivity activity;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
@@ -48,6 +52,7 @@ public class HelperMapActivity extends MapActivity implements DrawManagerInterfa
 		setContentView(R.layout.maps);
 		MapView mapView = (MapView) findViewById(R.id.mapview);
 		handler = new Handler();
+		this.activity = this; 
 
 		mapView.setBuiltInZoomControls(true);
 
@@ -55,14 +60,12 @@ public class HelperMapActivity extends MapActivity implements DrawManagerInterfa
 
 		mapOverlays= mapView.getOverlays();
 
-		green_marker = this.getResources().getDrawable(R.drawable.androidmarker_green);
-		green_marker.setBounds(0, 0, green_marker.getIntrinsicWidth(), green_marker.getIntrinsicHeight());
-		red_marker = this.getResources().getDrawable(R.drawable.androidmarker_red);
-		red_marker.setBounds(0, 0, red_marker.getIntrinsicWidth(), red_marker.getIntrinsicHeight());
-		blue_marker = this.getResources().getDrawable(R.drawable.androidmarker_blue);
-		blue_marker.setBounds(0, 0, blue_marker.getIntrinsicWidth(), blue_marker.getIntrinsicHeight());
+		pin_green = this.getResources().getDrawable(R.drawable.maps_pin_green);
+		pin_green.setBounds(0, 0, pin_green.getIntrinsicWidth(), pin_green.getIntrinsicHeight());
+		pin_orange = this.getResources().getDrawable(R.drawable.maps_pin_orange);
+		pin_orange.setBounds(0, 0, pin_orange.getIntrinsicWidth(), pin_orange.getIntrinsicHeight());
 
-		overlay = new MyItemnizedOverlay(green_marker, this);
+		overlay = new MapItemnizedOverlay(pin_green, this);
 
 		mapController = mapView.getController();
 		mapOverlays.add(overlay);
@@ -98,20 +101,13 @@ public class HelperMapActivity extends MapActivity implements DrawManagerInterfa
 				}
 
 				if (userInterface.getId().equalsIgnoreCase(UserManager.getInstance().thisUser().getId())) {
-					overlayitem = new OverlayItem(userInterface.getGeoPoint(), userInterface.getName(),"Sie");
-					overlayitem.setMarker(green_marker);
+					overlayitem = new OverlayItem(userInterface.getGeoPoint(), userInterface.getId(),"Sie");
+					overlayitem.setMarker(pin_green);
 
-				}else {
-					// not us but
-					if ( userInterface.isHelper()) { // a helper
-						overlayitem = new OverlayItem(userInterface.getGeoPoint(), userInterface.getName(),"ein Helfer");
-						overlayitem.setMarker(blue_marker);
+				}else {// a help seeker
+					overlayitem = new OverlayItem(userInterface.getGeoPoint(), userInterface.getId(),"ein Hilfesuchender");
+					overlayitem.setMarker(pin_orange);
 
-					}else{// a help seeker
-						overlayitem = new OverlayItem(userInterface.getGeoPoint(), userInterface.getName(),"ein Hilfesuchender");
-						overlayitem.setMarker(red_marker);
-
-					}
 				}
 
 				map.put(userInterface.getId(), overlayitem);
@@ -134,7 +130,7 @@ public class HelperMapActivity extends MapActivity implements DrawManagerInterfa
 		}
 		else if (object instanceof Task) {
 			Task task = (Task) object;
-			handler.post(showInRangeMessageBox(this));
+			handler.post(showInRangeMessageBox());
 		}
 
 	}
@@ -175,19 +171,19 @@ public class HelperMapActivity extends MapActivity implements DrawManagerInterfa
 		}
 	}
 
-	private Runnable showInRangeMessageBox( final Context context){
+	private Runnable showInRangeMessageBox(){
 		return new Runnable() {
 
 			@Override
 			public void run() {
-				AlertDialog.Builder dlgAlert = new AlertDialog.Builder(context);
+				AlertDialog.Builder dlgAlert = new AlertDialog.Builder(activity);
 				dlgAlert.setTitle(getString(R.string.seeker_in_range_title));
 				dlgAlert.setMessage(getString(R.string.seeker_in_range_text));
 				dlgAlert.setPositiveButton("OK", new DialogInterface.OnClickListener() {
 
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
-						Intent intent = new Intent(context, HelperActivity.class);
+						Intent intent = new Intent(activity, HelperActivity.class);
 						HistoryManager.getInstance().stopTask();
 						handler.post(HistoryManager.getInstance().saveHistory(getApplicationContext()));
 						MessageOrchestrator.getInstance().removeDrawManager(DRAWMANAGER_TYPE.MAP);
@@ -198,14 +194,14 @@ public class HelperMapActivity extends MapActivity implements DrawManagerInterfa
 				});
 				AlertDialog dialog = dlgAlert.create();
 				try{
-				dialog.show();
+					dialog.show();
 				}catch(Exception exception){
 					Log.e(HelperMapActivity.class.getSimpleName(), exception.toString());
 				}
 			}
 		};
 	}
-	
+
 	@Override
 	public void onBackPressed() {
 		Intent intent = new Intent(this, HelperActivity.class);

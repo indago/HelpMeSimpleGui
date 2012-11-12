@@ -49,7 +49,7 @@ public class HelperActivity extends Activity implements DrawManagerInterface {
 		adapter.addAll(UserManager.getInstance().getUsers());
 
 		listView.setAdapter(adapter);
-		MessageOrchestrator.getInstance().addDrawManager(DRAWMANAGER_TYPE.LIST, this);
+		MessageOrchestrator.getInstance().addDrawManager(DRAWMANAGER_TYPE.HELPER, this);
 
 		listView.setOnItemClickListener(new OnItemClickListener() {
 

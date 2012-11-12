@@ -1,5 +1,17 @@
-<resources>
+<resources xmlns:android="http://schemas.android.com/apk/res/android">
 
+    <color name="sd_content_background">#212121</color>
+    <color name="black">#ff000000</color>
+    <color name="white">#ffffffff</color>
+    <color name="blue">#ff00a9e8</color>
+    <color name="helpme_grey_dark">#ff212121</color>
+    
     <style name="AppTheme" parent="android:Theme.Light" />
+
+    <style name="AlertDialogCustom" parent="@android:style/Holo.Light.ButtonBar.AlertDialog">
+        <item name="android:textColor">@color/white</item>
+        <item name="android:background">@drawable/background</item>
+        <!--  <item name="android:textSize">10sp</item>-->
+    </style>
 
 </resources>

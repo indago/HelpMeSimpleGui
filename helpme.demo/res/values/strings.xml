@@ -24,5 +24,4 @@
     <string name="no_helper_text">We are sorry but no helping hand could be located near to your position!</string>
     <string name="history_snippet_text">sometext sometext sometext</string>
     <string name="title_activity_history">History</string>
-
 </resources>

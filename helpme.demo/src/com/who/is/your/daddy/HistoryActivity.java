@@ -15,6 +15,8 @@ import com.android.helpme.demo.interfaces.DrawManagerInterface.DRAWMANAGER_TYPE;
 import com.android.helpme.demo.manager.HistoryManager;
 import com.android.helpme.demo.manager.MessageOrchestrator;
 import com.android.helpme.demo.manager.UserManager;
+import com.android.helpme.demo.overlay.HistoryItemnizedOverlay;
+import com.android.helpme.demo.overlay.HistoryOverlayItem;
 import com.android.helpme.demo.utils.Task;
 import com.android.helpme.demo.utils.User;
 import com.android.helpme.demo.utils.position.Position;
@@ -37,10 +39,10 @@ import android.os.Handler;
  */
 public class HistoryActivity extends MapActivity implements DrawManagerInterface {
 	private List<Overlay> mapOverlays;
-	private MyItemnizedOverlay overlay;
+	private HistoryItemnizedOverlay overlay;
 	private MapController mapController;
 	private Handler handler;
-	private Drawable blue_marker;
+	private Drawable pin_green;
 
 	/**
 	 * 
@@ -57,10 +59,10 @@ public class HistoryActivity extends MapActivity implements DrawManagerInterface
 
 		mapOverlays= mapView.getOverlays();
 
-		blue_marker = this.getResources().getDrawable(R.drawable.androidmarker_blue);
-		blue_marker.setBounds(0, 0, blue_marker.getIntrinsicWidth(), blue_marker.getIntrinsicHeight());
+		pin_green = this.getResources().getDrawable(R.drawable.maps_pin_green);
+		pin_green.setBounds(0, 0, pin_green.getIntrinsicWidth(), pin_green.getIntrinsicHeight());
 
-		overlay = new MyItemnizedOverlay(blue_marker, this);
+		overlay = new HistoryItemnizedOverlay(pin_green, this);
 
 		mapController = mapView.getController();
 		mapOverlays.add(overlay);
@@ -80,7 +82,9 @@ public class HistoryActivity extends MapActivity implements DrawManagerInterface
 					
 					snippet = getString(R.string.history_snippet_text);
 					
-					OverlayItem overlayitem = new OverlayItem(position.getGeoPoint(), user.getName(), snippet);
+					HistoryOverlayItem overlayitem = new HistoryOverlayItem(position.getGeoPoint(), user.getId(), snippet,jsonObject);
+					overlayitem.setMarker(pin_green);
+					
 					overlay.addOverlay(overlayitem);
 				}
 				setZoomLevel();
@@ -111,7 +115,7 @@ public class HistoryActivity extends MapActivity implements DrawManagerInterface
 					(maxLongitude + minLongitude) / 2));
 
 		}else if (overlay.size() == 1) {
-			OverlayItem item = overlay.getItem(0);
+			HistoryOverlayItem item = (HistoryOverlayItem) overlay.getItem(0);
 			mapController.animateTo(item.getPoint());
 			while(mapController.zoomIn()){
 
