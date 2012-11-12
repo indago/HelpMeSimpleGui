@@ -87,7 +87,7 @@ public class HelperCommingActivity extends Activity implements DrawManagerInterf
 					}
 				});
 
-				dlgAlert.create().show();
+				dlgAlert.show();
 				
 			}
 		};
